@@ -6,6 +6,7 @@ function snakeCase(str) {
   return str.replace(/([A-Z])/g, function($1){return "_"+$1.toLowerCase();})
           .replace(/^_/, "") // Remove first underscore
           .replace(/_$/, "") // Remove last underscore
+          .replace(/-+/g, "_")
           .replace(/__+/g, "_") // Replace multiple underscores with one
           .replace(/\s+/g, '')
           .replace(/[^a-zA-Z0-9_]/g, '');
@@ -22,7 +23,7 @@ module.exports = async (ctx) => {
     type: 'input',
     name: 'pluginName',
     message: 'What is the name of the plugin?',
-    default: fs.readdirSync(ctx.pluginDir)[0]
+    default: path.basename(ctx.pluginDir)
   });
 
   // Ask for the plugin key (suggesting the plugin name in snake_case)
@@ -52,6 +53,9 @@ module.exports = async (ctx) => {
     permissions: {},
   };
   fs.writeFileSync(path.join(ctx.pluginDir, 'plugin.jsonc'), JSON.stringify(pluginJsonc, null, 2));
+
+  // Create the cache folder
+  fs.mkdirSync(path.join(ctx.pluginDir, '.cache'));
 
   // ===========================================================================================
   //                                        API DATA

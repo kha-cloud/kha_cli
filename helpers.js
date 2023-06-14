@@ -1,5 +1,7 @@
 const fs = require('fs');
 const path = require('path');
+const checksum = require('checksum');
+const axios = require('axios');
 
 function cacheInit(cache_key, pluginDir) {
   const cacheDir = path.join(pluginDir, '.cache');
@@ -47,10 +49,41 @@ function sleep(ms) {
   });
 };
 
+async function calculateChecksum(file) {
+  return new Promise((resolve, reject) => {
+    checksum.file(file, (err, sum) => {
+      if (err) {
+        reject(err);
+      }else {
+        resolve(sum);
+      }
+    });
+  });
+}
+
+function createContextHelpers(ctx) {
+  return {
+    // ------------------------------------------- DataCaller -------------------------------------------
+    dataCaller: async (method, url, data) => {
+      const response = await axios({
+        method,
+        url: `${ctx.khaConfig.url}${url}`,
+        data,
+        headers: {
+          _token: ctx.khaConfig.token,
+        },
+      });
+      return response.data;
+    },
+  };
+}
+
 module.exports = {
   sleep,
   cacheInit,
   getCache,
   setCache,
   createCacheObject,
+  calculateChecksum,
+  createContextHelpers,
 };

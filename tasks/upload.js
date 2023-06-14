@@ -38,7 +38,36 @@ module.exports = async (ctx) => {
 
   //TODO Check static and locales folders
 
-  //TODO Send data to the server
-  console.log(data);
+  if(!ctx.clientCache.get("plugin_exists")){
+    const response = await ctx.dataCaller("get", `/api/check_plugin_by_key/${plugin.key}`);
+    if (!response.checked) {
+      // Creating the plugin in the server
+      const response = await ctx.dataCaller("post", "/api/plugins", {
+        ...ctx.pluginData,
+      });
+      if (response.error) {
+        console.log(response.error);
+        process.exit(1);
+      }
+      ctx.clientCache.set("plugin_exists", true);
+    }
+  }
+
+
+
+
+  
+  // Sending data to the server
+  const response = await axios.put(`${plugin.api}/api/plugins/${plugin.id}`, payload, {
+    headers: {
+      _token: plugin.token
+    }
+  });
+  if (response.error) {
+    console.log(response.error);
+    process.exit(1);
+  }
+  console.log(`Plugin "${pluginKey}" uploaded successfully`);
+  // console.log(data);
 
 };

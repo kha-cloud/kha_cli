@@ -62,7 +62,7 @@ async function run() {
 
   var cache = helpers.createCacheObject("global_cache", pluginDir);
 
-  var clientCache = helpers.createCacheObject("client_"+khaConfig.url+"_cache", pluginDir);
+  var clientCache = helpers.createCacheObject("client_"+helpers.slugify(khaConfig.url)+"_cache", pluginDir);
 
   //TODO Load Cache (Last Upload Date, File Hashes, etc.)
 

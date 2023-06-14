@@ -61,6 +61,14 @@ async function calculateChecksum(file) {
   });
 }
 
+function slugify(text) {
+  // Except alphanumeric characters, replace all other characters with a dash
+  return text.toString().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-+/, '').replace(/-+$/, '');
+}
+
+// =======================================================================================================
+// =========================================== Context Helpers ===========================================
+// =======================================================================================================
 function createContextHelpers(ctx) {
   return {
     // ------------------------------------------- DataCaller -------------------------------------------
@@ -85,5 +93,6 @@ module.exports = {
   setCache,
   createCacheObject,
   calculateChecksum,
+  slugify,
   createContextHelpers,
 };

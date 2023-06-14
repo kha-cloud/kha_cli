@@ -53,10 +53,6 @@ module.exports = async (ctx) => {
     }
   }
 
-
-
-
-  
   // Sending data to the server
   const response = await axios.put(`${plugin.api}/api/plugins/${plugin.id}`, payload, {
     headers: {

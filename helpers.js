@@ -123,9 +123,9 @@ function pathToLinuxFormat(pathVariable) {
 function createContextHelpers(ctx) {
   return {
     // ------------------------------------------- DataCaller -------------------------------------------
-    dataCaller: async (method, url, data, headers = {}, config = {}) => {
-      const response = await axios({
-        ...config,
+    dataCaller: async (method, url, data, headers = {}, _config = {}) => {
+      const config = {
+        ..._config,
         method,
         url: `${ctx.khaConfig.url}${url}`,
         data,
@@ -133,7 +133,10 @@ function createContextHelpers(ctx) {
           ...headers,
           _token: ctx.khaConfig.token,
         },
-      });
+      };
+      console.log(" ------------------ config ------------------ ");
+      console.log(config);
+      const response = await axios(config);
       return response.data;
     },
   };

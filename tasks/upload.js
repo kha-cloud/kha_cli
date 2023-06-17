@@ -41,12 +41,12 @@ module.exports = async (ctx) => {
     data.web = await web_assembler(ctx);
   }
 
+  ctx.helpers.log("Plugin data assembled successfully", "success");
+
   //TODO Check static and locales folders
   if (fs.existsSync(path.join(ctx.pluginDir, 'static'))) {
     await static_uploader(ctx);
   }
-
-  ctx.helpers.log("Plugin data assembled successfully", "success");
 
   // Checking if plugin exists in the server
   if(!ctx.clientCache.get("plugin_exists")){

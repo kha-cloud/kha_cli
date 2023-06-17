@@ -68,7 +68,7 @@ function slugify(text) {
 
 var firstInfoLog = true;
 function log(_text, color) {
-  const text = "► "+_text;
+  var text = (color == "info") ? " + "+_text : "► "+_text;
   if(!firstInfoLog && color !== 'error') {
     process.stdout.write('\u001b[1G'); // Move cursor to the beginning of the line
     process.stdout.write('\u001b[2K'); // Clear the entire line
@@ -125,14 +125,14 @@ function createContextHelpers(ctx) {
     // ------------------------------------------- DataCaller -------------------------------------------
     dataCaller: async (method, url, data, headers = {}, config = {}) => {
       const response = await axios({
+        ...config,
         method,
         url: `${ctx.khaConfig.url}${url}`,
         data,
         headers: {
-          _token: ctx.khaConfig.token,
           ...headers,
+          _token: ctx.khaConfig.token,
         },
-        ...config,
       });
       return response.data;
     },

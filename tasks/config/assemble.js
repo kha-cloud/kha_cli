@@ -19,6 +19,7 @@ const getSchema = (ctx) => {
   modelFiles.forEach((modelFile) => {
     const modelFilePath = path.join(modelsFolder, modelFile);
     const modelFileContent = fs.readFileSync(modelFilePath, 'utf8');
+    if (modelFileContent.trim() === '') return;
     const model = commentJson.parse(modelFileContent);
     dbSchema[model.model] = model;
   });

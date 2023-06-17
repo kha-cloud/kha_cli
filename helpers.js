@@ -66,20 +66,73 @@ function slugify(text) {
   return text.toString().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-+/, '').replace(/-+$/, '');
 }
 
+var firstInfoLog = true;
+function log(_text, color) {
+  const text = "► "+_text;
+  if(!firstInfoLog && color !== 'error') {
+    process.stdout.write('\u001b[1G'); // Move cursor to the beginning of the line
+    process.stdout.write('\u001b[2K'); // Clear the entire line
+  }
+  if (color) {
+    switch (color) {
+      case 'error':
+        console.error('\x1b[31m%s\x1b[0m', text);
+        firstInfoLog = true;
+        break;
+      case 'success':
+        console.log('\x1b[32m%s\x1b[0m', text);
+        firstInfoLog = true;
+        break;
+      case 'warning':
+        console.log('\x1b[33m%s\x1b[0m', text);
+        firstInfoLog = true;
+        break;
+      case 'info':
+        if (firstInfoLog) {
+          firstInfoLog = false;
+        }
+        console.log('\x1b[34m%s\x1b[0m', text);
+        firstInfoLog = true;
+        break;
+      default:
+        console.log('\x1b[37m%s\x1b[0m', text);
+        firstInfoLog = true;
+        break;
+    }
+  } else {
+    console.log(text);
+    firstInfoLog = true;
+  }
+}
+
+function stringToHex(str) {
+  let hex = '';
+  for(let i=0; i<str.length; i++) {
+    hex += ''+str.charCodeAt(i).toString(16);
+  }
+  return hex;
+}
+
+function pathToLinuxFormat(pathVariable) {
+  return path.posix.join(...path.normalize(pathVariable).split(path.sep));
+}
+
 // =======================================================================================================
 // =========================================== Context Helpers ===========================================
 // =======================================================================================================
 function createContextHelpers(ctx) {
   return {
     // ------------------------------------------- DataCaller -------------------------------------------
-    dataCaller: async (method, url, data) => {
+    dataCaller: async (method, url, data, headers = {}, config = {}) => {
       const response = await axios({
         method,
         url: `${ctx.khaConfig.url}${url}`,
         data,
         headers: {
           _token: ctx.khaConfig.token,
+          ...headers,
         },
+        ...config,
       });
       return response.data;
     },
@@ -94,5 +147,10 @@ module.exports = {
   createCacheObject,
   calculateChecksum,
   slugify,
+  log,
+  stringToHex,
+  pathToLinuxFormat,
+
+  // ------- Context Helpers -------
   createContextHelpers,
 };

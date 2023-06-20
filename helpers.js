@@ -134,8 +134,8 @@ function createContextHelpers(ctx) {
           _token: ctx.khaConfig.token,
         },
       };
-      console.log(" ------------------ config ------------------ ");
-      console.log(config);
+      // console.log(" ------------------ config ------------------ ");
+      // console.log(config);
       const response = await axios(config);
       return response.data;
     },

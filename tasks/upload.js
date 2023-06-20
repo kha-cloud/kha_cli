@@ -4,6 +4,7 @@ const config_assembler = require('./config/assemble');
 const mobile_assembler = require('./mobile/assemble');
 const web_assembler = require('./web/assemble');
 const static_uploader = require('./static/upload');
+const locales_uploader = require('./locales/upload');
 const fs = require('fs');
 const path = require('path');
 
@@ -43,9 +44,14 @@ module.exports = async (ctx) => {
 
   ctx.helpers.log("Plugin data assembled successfully", "success");
 
-  //TODO Check static and locales folders
+  // Uploading static files
   if (fs.existsSync(path.join(ctx.pluginDir, 'static'))) {
     await static_uploader(ctx);
+  }
+
+  // Uploading locales
+  if (fs.existsSync(path.join(ctx.pluginDir, 'locales'))) {
+    await locales_uploader(ctx);
   }
 
   // Checking if plugin exists in the server

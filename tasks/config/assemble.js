@@ -46,14 +46,37 @@ const getHooks = (ctx) => {
   return dbHooks;
 };
 
+const getSettingsSchema = (ctx) => {
+  const settingsSchemaFile = path.join(ctx.pluginDir, 'config', 'settings', 'schema.jsonc');
+  const settingsSchemaContent = fs.readFileSync(settingsSchemaFile, 'utf8');
+  const settingsSchema = commentJson.parse(settingsSchemaContent);
+
+  return settingsSchema;
+};
+
+const getSettingsData = (ctx) => {
+  const settingsDataFile = path.join(ctx.pluginDir, 'config', 'settings', 'data.jsonc');
+  const settingsDataContent = fs.readFileSync(settingsDataFile, 'utf8');
+  const settingsData = commentJson.parse(settingsDataContent);
+
+  return settingsData;
+};
+
 module.exports = async (ctx) => {
+  // Database data
   const dbSeed = getSeed(ctx);
   const dbSchema = getSchema(ctx);
   const dbHooks = getHooks(ctx);
+
+  // Settings data
+  const settingsSchema = getSettingsSchema(ctx);
+  const settingsData = getSettingsData(ctx);
 
   return {
     dbSeed,
     dbSchema,
     hooks: dbHooks,
+    settingsSchema,
+    settingsData,
   };
 };

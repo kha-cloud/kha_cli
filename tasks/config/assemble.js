@@ -36,11 +36,12 @@ const getHooks = (ctx) => {
   hookFiles.forEach((hookFile) => {
     const hookFilePath = path.join(hooksFolder, hookFile);
     const hookFileContent = fs.readFileSync(hookFilePath, 'utf8');
+    const hookName = hookFile.split('.').slice(0, -1).join('.');
     const hook = {
-      model: hookFile.replace('.js', ''),
+      model: hookName,
       content: hookFileContent,
     }
-    dbHooks[hookFile] = hook;
+    dbHooks[hookName] = hook;
   });
 
   return dbHooks;

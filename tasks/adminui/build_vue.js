@@ -79,10 +79,20 @@ function createEntryJsFile(ctx, pages) {
 
   // Creating components (pages)
   const Components = {};
-  ${pages.map((cp) => `Components["cp_"+cp_cache_key+"_${cp.name}"] = { ...${cp.name}, name: "cp_"+cp_cache_key+"_${cp.name}"}`).join(";\n")}
+  ${pages.map((cp) => `Components["cp_"+cp_cache_key+"_${cp.name}"] = {
+    ...${cp.name},
+    props: {
+      ...(${cp.name}.props || {}),
+      params: {
+        type: Object,
+        default: () => ({})
+      },
+    },
+    name: "cp_"+cp_cache_key+"_${cp.name}"
+  }`).join(";\n")}
 
   Object.keys(Components).forEach(name=>{
-    $nuxt.$vue_instance_for_plugins.component(Components[name].name,Components[name])
+    $nuxt.$vue_instance_for_plugins.component(Components[name].name, Components[name]);
     console.log("Page component "+Components[name].name+" is ready");
   })
 
@@ -145,9 +155,9 @@ async function buildPlugin(ctx) {
     const command = `node "${require.resolve('@vue/cli-service/bin/vue-cli-service.js')}" build --dest "${distFolder}" --target lib --name ${ctx.pluginKey} --filename ${ctx.pluginKey} ` + entryJsFile;
     // const command = `npx vue-cli-service build --target lib --name ${ctx.pluginKey} --filename ${ctx.pluginKey} ` + entryJsFile;
 
-    console.log("command ++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-    console.log(command);
-    console.log("command ++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+    // console.log("command ++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+    // console.log(command);
+    // console.log("command ++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
     const childProcess = spawn(command, {
       stdio: 'inherit',
       shell: true,

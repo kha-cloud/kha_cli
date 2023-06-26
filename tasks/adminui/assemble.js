@@ -107,7 +107,7 @@ const getAdminUIPages = (ctx) => {
 
 module.exports = async (ctx) => {
 
-  var lastUpdates = ctx.cache.get('adminui_last_updates');
+  // var lastUpdates = ctx.cache.get('adminui_last_updates');
 
   // Retrieve the configuration for the admin UI
   const adminUIConfig = getAdminUIConfig(ctx);
@@ -120,7 +120,7 @@ module.exports = async (ctx) => {
 
   // Retrieve the pages
   const adminUIPages = getAdminUIPages(ctx);
-  
+
   // Generate the pages routes and dynamic routes
   // Only if there are changes do compile
   const recompilePages = (adminUIPages.filter((page) => page.updated).length > 0);

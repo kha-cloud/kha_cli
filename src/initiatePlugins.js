@@ -38,14 +38,14 @@ const initiatePlugins = async () => {
       };
       const pluginInfo = await axios.get(requestOptions.url, { headers: requestOptions.headers });
       // console.log(pluginInfo.data);
-      const { name, key, description, pluginVersion, adminUi, triggers, controllers, apis, data } = pluginInfo.data;
+      const { name, key, description, pluginVersion, adminUI, triggers, controllers, apis, data } = pluginInfo.data;
       
       console.log(`Initiating ${name} (${key})...`);
 
       fs.mkdirSync(pluginFolder);
-      fs.mkdirSync(path.join(pluginFolder, 'adminUi'));
-      fs.writeFileSync(path.join(pluginFolder, 'adminUi', 'config.jsonc'), JSON.stringify(apis, null, 2));
-      fs.mkdirSync(path.join(pluginFolder, 'adminUi', 'pages'));
+      fs.mkdirSync(path.join(pluginFolder, 'adminUI'));
+      fs.writeFileSync(path.join(pluginFolder, 'adminUI', 'config.jsonc'), JSON.stringify(apis, null, 2));
+      fs.mkdirSync(path.join(pluginFolder, 'adminUI', 'pages'));
 
       fs.mkdirSync(path.join(pluginFolder, 'controllers'));
       

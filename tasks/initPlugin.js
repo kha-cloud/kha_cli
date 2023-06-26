@@ -54,8 +54,9 @@ module.exports = async (ctx) => {
   };
   fs.writeFileSync(path.join(ctx.pluginDir, 'plugin.jsonc'), JSON.stringify(pluginJsonc, null, 2));
 
-  // Create the cache folder
+  // Create the cache/dist folder
   fs.mkdirSync(path.join(ctx.pluginDir, '.cache'));
+  fs.mkdirSync(path.join(ctx.pluginDir, '.cache', 'dist'));
 
   // ===========================================================================================
   //                                        API DATA
@@ -103,6 +104,7 @@ module.exports = async (ctx) => {
       fs.mkdirSync(path.join(ctx.pluginDir, 'adminUI'));
       fs.mkdirSync(path.join(ctx.pluginDir, 'adminUI', 'pages'));
       fs.mkdirSync(path.join(ctx.pluginDir, 'adminUI', 'components'));
+      fs.mkdirSync(path.join(ctx.pluginDir, 'adminUI', 'partials'));
 
       // Files
       fs.writeFileSync(path.join(ctx.pluginDir, 'adminUI', 'config.jsonc'), "{}");

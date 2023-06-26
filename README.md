@@ -2,6 +2,13 @@
 
 Kha Plugins CLI is a command-line tool for managing your work with multiple websites on KhaCloud based cloud services. 
 
+## Requirements
+
+- Node.js 12 or higher
+- NPM (comes with Node.js)
+- NPX
+- A KhaCloud based cloud service account
+
 ## Installation
 
 ```bash

@@ -75,6 +75,7 @@ const getAdminUIPages = (ctx) => {
             component: itemPath.replace(path.join(ctx.pluginDir, 'adminUI'), '').replace(/\\/g, '/'),
             updated: false,
             name: '',
+            // relativePath: itemPath.replace(path.join(ctx.pluginDir, 'adminUI', ctx.pluginKey), ''),
           };
           page.name = ctx.helpers.slugify(ctx.pluginKey+page.component).replace(/-/g, '_');
           const cache_updated_date = ctx.cache.get(`adminui_page_${page.component}_updated`);
@@ -123,13 +124,19 @@ module.exports = async (ctx) => {
 
   // Generate the pages routes and dynamic routes
   // Only if there are changes do compile
-  const recompilePages = (adminUIPages.filter((page) => page.updated).length > 0);
+  const recompilePages = ctx.cache.get('adminui_compiled_error') || (adminUIPages.filter((page) => page.updated).length > 0);
   var compiledPages;
+  ctx.cache.set('adminui_compiled_error', true); // So if the compilation fails, it will automatically gets flagged as an error
   if (recompilePages) {
     // Compile the pages
     compiledPages = await compileVue(ctx, adminUIPages);
+    if(!compiledPages){
+      ctx.helpers.log('Admin UI pages compilation failed', 'error');
+      process.exit(1);
+    }
     // Save the last updates
     ctx.cache.set('adminui_compiled_pages', compiledPages);
+    ctx.cache.set('adminui_compiled_error', false);
   } else {
     // Load the last updates
     compiledPages = ctx.cache.get('adminui_compiled_pages');

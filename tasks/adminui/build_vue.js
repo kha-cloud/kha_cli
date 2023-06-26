@@ -1,7 +1,7 @@
 const { parse, compileTemplate } = require('@vue/compiler-sfc');
 const babel = require('@babel/core');
 const { exec, spawn } = require('child_process');
-const fs = require("fs");
+const fs = require("fs-extra");
 const path = require("path");
 const rootDir = process.cwd();
 
@@ -12,10 +12,11 @@ function deleteEntryJsFile(ctx) {
   }
 }
 
-function createEntryJsFile(ctx, pages) {
+function createBuildFolder(ctx, pages) {
   // const adminUIFolder = path.join(__dirname, "..", "plugins", pluginKey, "adminUi", "pages");
   const adminUIFolder = path.join(ctx.pluginDir, "adminUI");
-  const entryJsFile = path.join(ctx.pluginDir, ".cache", "build", "entry.js");
+  const buildFolder = path.join(ctx.pluginDir, ".cache", "build");
+  const entryJsFile = path.join(buildFolder, "entry.js");
 
   // Create the `dist` and `build` folders if it doesn't exist
   if (!fs.existsSync(path.join(ctx.pluginDir, ".cache", "dist"))) {
@@ -25,16 +26,35 @@ function createEntryJsFile(ctx, pages) {
     fs.mkdirSync(path.join(ctx.pluginDir, ".cache", "build"));
   }
 
-  // var components = [];
+  // Copy `pages` and `components` folders to `build` folder
+  fs.copySync(path.join(adminUIFolder, "pages"), path.join(buildFolder, "pages"));
+  fs.copySync(path.join(adminUIFolder, "components"), path.join(buildFolder, "components"));
+
+  // Replace all `@P/` with `/api/plugins_static/${ctx.pluginKey}/` in all `pages` and `components` files
+  const replaceInCode = (code) => {
+    return code.replace(/@P\//g, `/api/plugins_static/${ctx.pluginKey}/`);
+  };
+  const recursiveFolderList = (folder) => {
+    const files = fs.readdirSync(folder);
+    files.forEach((file) => {
+      const filePath = path.join(folder, file);
+
+      if (fs.lstatSync(filePath).isDirectory()) {
+        recursiveFolderList(filePath);
+      }else {
+        const fileCode = fs.readFileSync(filePath, "utf8");
+        const newFileCode = replaceInCode(fileCode);
+        fs.writeFileSync(filePath, newFileCode, "utf8");
+      }
+    });
+  };
+  recursiveFolderList(path.join(buildFolder, "pages"));
+  recursiveFolderList(path.join(buildFolder, "components"));
+
   var vuetifyComponentsToImport = [];
-
-  // fs.readdirSync(adminUIFolder).forEach((file) => {
   pages.forEach((page) => {
-    // delete file extension before adding to components array
-    // components.push(file.slice(0, -4));
-
     // Loading the required Vuetify components
-    const componentCode = fs.readFileSync(path.join(adminUIFolder, page.component), "utf8");
+    const componentCode = fs.readFileSync(path.join(buildFolder, page.component), "utf8");
     // Search in componentCode for the Vuetify components names prefixed with "<v-" [Important: Components names could only contain upper case and lower case letters and dashes]
     // const vuetifyComponents = componentCode.match(/v-([a-z]|[A-Z]|-)+/g);
     const vuetifyComponents = (componentCode.match(/<v-([a-z]|[A-Z]|-)+/g) || []).map((vuetifyComponent) => vuetifyComponent.slice(1));
@@ -60,13 +80,10 @@ function createEntryJsFile(ctx, pages) {
       }
     }
   });
-  // console.log("vuetifyComponentsToImport");
-  // console.log(vuetifyComponentsToImport);
-  // process.exit(0);
 
   const content = /* xjs */`
   import Vue from "vue";
-  ${pages.map((cp) => `import ${cp.name} from "${path.join(adminUIFolder, cp.component)}";`).join("\n")}
+  ${pages.map((cp) => `import ${cp.name} from "${path.join(buildFolder, cp.component)}";`).join("\n")}
 
   console.log("=============================================");
   console.log("=============================================");
@@ -176,7 +193,7 @@ async function buildPlugin(ctx) {
       if (code === 0) {
         resolve('Compilation completed successfully');
       } else {
-        reject('Compilation failed with exit code: ' + code);
+        reject('Compilation error : failed with exit code: ' + code);
       }
     });
 
@@ -203,9 +220,12 @@ function readCompiledFiles(ctx) {
 
 const compileVue = async (ctx, pages, options = {}) => {
   // console.log("Creating entry.js file...");
-  createEntryJsFile(ctx, pages);
+  createBuildFolder(ctx, pages);
   // console.log("Building plugin...");
-  await buildPlugin(ctx, pages);
+  const res = await buildPlugin(ctx, pages);
+  if(res.includes("error")) {
+    return false;
+  }
   // console.log("Deleting entry.js file...");
   deleteEntryJsFile(ctx);
   // console.log("Reading compiled files...");

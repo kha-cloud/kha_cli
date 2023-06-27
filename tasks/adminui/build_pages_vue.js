@@ -218,7 +218,7 @@ function readCompiledFiles(ctx) {
   };
 }
 
-const compileVue = async (ctx, pages, options = {}) => {
+const compilePagesVue = async (ctx, pages, options = {}) => {
   // console.log("Creating entry.js file...");
   createBuildFolder(ctx, pages);
   // console.log("Building plugin...");
@@ -234,5 +234,5 @@ const compileVue = async (ctx, pages, options = {}) => {
 };
 
 module.exports = {
-  compileVue,
+  compilePagesVue,
 };

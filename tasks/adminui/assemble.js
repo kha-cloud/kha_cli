@@ -1,7 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 const commentJson = require('comment-json');
-const { compileVue } = require('./build_vue');
+const { compilePagesVue } = require('./build_pages_vue');
+const { compilePartialsVue } = require('./build_partials_vue');
 
 const getAdminUIConfig = (ctx) => {
   const configFile = path.join(ctx.pluginDir, 'adminUI', 'config.jsonc');
@@ -104,6 +105,89 @@ const getAdminUIPages = (ctx) => {
   return pages;
 };
 
+const getAdminUIPartials = (ctx) => {
+  // Loading the partials
+  const partialsFolder = path.join(ctx.pluginDir, 'adminUI', 'partials');
+  const partials = [];
+
+  // Loading the partials recursively
+  const loadpartials = (ctx, folder) => {
+    // Get the folder content
+    const folderContent = fs.readdirSync(folder);
+    // Iterate over the folder content
+    folderContent.forEach((item) => {
+      // Get the item path
+      const itemPath = path.join(folder, item);
+
+      // Check if the item is a folder
+      if (fs.lstatSync(itemPath).isDirectory()) {
+        return null;
+      } else {
+        // If the item is a file, then check if it's a partial (ends with .vue)
+        if (item.endsWith('.vue')) {
+          // If item size is 9 bytes or less, then it's an empty file, so ignore it
+          const itemState = fs.statSync(itemPath);
+          if(itemState.size <= 9) return null;
+          const partial = {
+            component: itemPath.replace(path.join(ctx.pluginDir, 'adminUI'), '').replace(/\\/g, '/'),
+            updated: false,
+            name: '',
+            key: item.slice(0, -4), // Remove the .vue extension
+          };
+          partial.name = ctx.helpers.slugify(ctx.pluginKey+partial.component).replace(/-/g, '_');
+          const cache_updated_date = ctx.cache.get(`adminui_partial_${partial.component}_updated`);
+          const updated_date = itemState.mtime.getTime();
+          partial.updated = (cache_updated_date !== updated_date);
+          if(partial.updated) ctx.cache.set(`adminui_partial_${partial.component}_updated`, updated_date);
+          
+          partials.push(partial);
+        }
+      }
+    });
+  };
+
+  loadpartials(ctx, partialsFolder);
+  return partials;
+};
+
+const getAdminUIScripts = (ctx) => {
+  // Loading the scripts
+  const scriptsFolder = path.join(ctx.pluginDir, 'adminUI', 'scripts');
+  const scripts = {};
+
+  // Loading the scripts recursively
+  const loadScripts = (ctx, folder) => {
+    // Get the folder content
+    const folderContent = fs.readdirSync(folder);
+    // Iterate over the folder content
+    folderContent.forEach((item) => {
+      // Get the item path
+      const itemPath = path.join(folder, item);
+
+      // Check if the item is a folder
+      if (fs.lstatSync(itemPath).isDirectory()) {
+        return null;
+      } else {
+        // If the item is a file, then check if it's a script (ends with .js)
+        if (item.endsWith('.js')) {
+          // If item size is 9 bytes or less, then it's an empty file, so ignore it
+          const itemState = fs.statSync(itemPath);
+          if(itemState.size <= 9) return null;
+          var script = fs.readFileSync(itemPath, 'utf8');
+          const scriptName = item.slice(0, -3); // Remove the .js extension
+          const replaceInCode = (code) => {
+            return code.replace(/@P\//g, `/api/plugins_static/${ctx.pluginKey}/`);
+          };
+          script = replaceInCode(script);
+          scripts[scriptName] = script;
+        }
+      }
+    });
+  };
+
+  loadScripts(ctx, scriptsFolder);
+  return scripts;
+};
 
 
 module.exports = async (ctx) => {
@@ -119,27 +203,55 @@ module.exports = async (ctx) => {
   // Retrieve the store for the admin UI
   const adminUIStore = getAdminUIStore(ctx);
 
+  // Retrieve the scripts for the admin UI
+  const adminUIScripts = getAdminUIScripts(ctx);
+
   // Retrieve the pages
   const adminUIPages = getAdminUIPages(ctx);
 
   // Generate the pages routes and dynamic routes
   // Only if there are changes do compile
-  const recompilePages = ctx.cache.get('adminui_compiled_error') || (adminUIPages.filter((page) => page.updated).length > 0);
+  const recompilePages = ctx.cache.get('adminui_pages_compiled_error') || (adminUIPages.filter((page) => page.updated).length > 0);
   var compiledPages;
-  ctx.cache.set('adminui_compiled_error', true); // So if the compilation fails, it will automatically gets flagged as an error
   if (recompilePages) {
+    ctx.cache.set('adminui_pages_compiled_error', true); // So if the compilation fails, it will automatically gets flagged as an error
+    ctx.helpers.log('Admin UI pages compilation started', 'info');
     // Compile the pages
-    compiledPages = await compileVue(ctx, adminUIPages);
+    compiledPages = await compilePagesVue(ctx, adminUIPages);
     if(!compiledPages){
       ctx.helpers.log('Admin UI pages compilation failed', 'error');
       process.exit(1);
     }
     // Save the last updates
     ctx.cache.set('adminui_compiled_pages', compiledPages);
-    ctx.cache.set('adminui_compiled_error', false);
+    ctx.cache.set('adminui_pages_compiled_error', false);
   } else {
     // Load the last updates
     compiledPages = ctx.cache.get('adminui_compiled_pages');
+  }
+
+  // Retrieve the partials
+  const adminUIPartials = getAdminUIPartials(ctx);
+
+  // Generate the partials routes and dynamic routes
+  // Only if there are changes do compile
+  const recompilePartials = ctx.cache.get('adminui_partials_compiled_error') || (adminUIPartials.filter((page) => page.updated).length > 0);
+  var compiledPartials;
+  if (recompilePartials) {
+    ctx.cache.set('adminui_partials_compiled_error', true); // So if the compilation fails, it will automatically gets flagged as an error
+    ctx.helpers.log('Admin UI partials compilation started', 'info');
+    // Compile the partials
+    compiledPartials = await compilePartialsVue(ctx, adminUIPartials);
+    if(!compiledPartials){
+      ctx.helpers.log('Admin UI partials compilation failed', 'error');
+      process.exit(1);
+    }
+    // Save the last updates
+    ctx.cache.set('adminui_compiled_partials', compiledPartials);
+    ctx.cache.set('adminui_partials_compiled_error', false);
+  } else {
+    // Load the last updates
+    compiledPartials = ctx.cache.get('adminui_compiled_partials');
   }
 
   return {
@@ -148,6 +260,8 @@ module.exports = async (ctx) => {
     store: adminUIStore,
     pages: adminUIPages,
     compiled: compiledPages,
+    compiledPartials: compiledPartials,
+    scripts: adminUIScripts,
   };
 
 };

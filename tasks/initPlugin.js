@@ -105,6 +105,7 @@ module.exports = async (ctx) => {
       fs.mkdirSync(path.join(ctx.pluginDir, 'adminUI', 'pages'));
       fs.mkdirSync(path.join(ctx.pluginDir, 'adminUI', 'components'));
       fs.mkdirSync(path.join(ctx.pluginDir, 'adminUI', 'partials'));
+      fs.mkdirSync(path.join(ctx.pluginDir, 'adminUI', 'scripts'));
 
       // Files
       fs.writeFileSync(path.join(ctx.pluginDir, 'adminUI', 'config.jsonc'), "{}");

@@ -13,7 +13,7 @@ Documentation for Plugins development can be found [here](https://docs.cyberocea
 ## Installation
 
 ```bash
-npm install -g kha-plugins-cli
+npm install -g kha_plugins_cli
 ```
 
 # Usage

@@ -1,6 +1,7 @@
 # Kha Plugins CLI
 
-Kha Plugins CLI is a command-line tool for managing your work with multiple websites on KhaCloud based cloud services. 
+Kha Plugins CLI is a command-line tool for managing your work with multiple websites on KhaCloud based cloud services.
+Documentation for Plugins development can be found [here](https://docs.cyberocean.tn/kha-plugins/) in the near future.
 
 ## Requirements
 

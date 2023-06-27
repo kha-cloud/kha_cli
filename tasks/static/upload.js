@@ -75,8 +75,32 @@ async function uploadFile(file_path, ctx) {
   const linux_file_path = ctx.helpers.stringToHex( formatToRemotePath(file_path, ctx) );
   const fileChecksum = await ctx.helpers.calculateChecksum(file_path);
 
+  /* NEW */const fileExtension = path.extname(file_path);
+  /* NEW */let data;
+  
+  /* NEW */const replaceInCode = (code) => {
+  /* NEW */  return code.replace(/@P\//g, `/api/plugins_static/${ctx.pluginKey}/`);
+  /* NEW */};
+
+  /* NEW */if (fileExtension === '.js' || fileExtension === '.css') {
+  /* NEW */  const fileContent = fs.readFileSync(file_path, 'utf-8');
+  /* NEW */  data = replaceInCode(fileContent);
+  /* NEW */} else {
+  /* NEW */  data = fs.createReadStream(file_path);
+  /* NEW */}
+
   const form = new FormData();
-  form.append('file', fs.createReadStream(file_path));
+  // form.append('file', fs.createReadStream(file_path));
+
+  /* NEW */if (fileExtension === '.js' || fileExtension === '.css') {
+  /* NEW */  form.append('file', data, { 
+  /* NEW */    filename: path.basename(file_path), 
+  /* NEW */    contentType: fileExtension === '.js' ? 'application/javascript' : 'text/css' 
+  /* NEW */  });
+  /* NEW */} else {
+  /* NEW */  form.append('file', data);
+  /* NEW */}
+  
   try {
     const result = await ctx.helpers.dataCaller(
       "post",

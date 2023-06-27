@@ -25,7 +25,7 @@ module.exports = async (ctx) => {
 
   const handleFileEvent = (eventType) => {
     return (path) => {
-      console.log(`File ${path} has been ${eventType}`);
+      if(eventType && path) console.log(`File ${path} has been ${eventType}`);
       debounceFunction(() => uploadPlugin(ctx).then(() => {
         ctx.helpers.log("");
         ctx.helpers.log("");
@@ -40,7 +40,8 @@ module.exports = async (ctx) => {
     .on('unlink', handleFileEvent('removed'))
     .on('error', (error) => console.log(`Watcher error: ${error}`));
 
-    ctx.helpers.log("");
-    ctx.helpers.log("");
-    ctx.helpers.log("Listening for changes...");
+  ctx.helpers.log("");
+  ctx.helpers.log("");
+  ctx.helpers.log("First upload ...");
+  handleFileEvent(null)(null);
 };

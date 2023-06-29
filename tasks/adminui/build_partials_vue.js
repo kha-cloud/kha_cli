@@ -27,8 +27,13 @@ function createBuildFolder(ctx, partials) {
   }
 
   // Copy `partials` folder to `build` folder
-  fs.copySync(path.join(adminUIFolder, "partials"), path.join(buildFolder, "partials"));
-  fs.copySync(path.join(adminUIFolder, "components"), path.join(buildFolder, "components"));
+  // fs.copySync(path.join(adminUIFolder, "partials"), path.join(buildFolder, "partials"));
+  // fs.copySync(path.join(adminUIFolder, "components"), path.join(buildFolder, "components"));
+  for (let folder of fs.readdirSync(adminUIFolder)) {
+    if (folder !== "node_modules") {
+      fs.copySync(path.join(adminUIFolder, folder), path.join(buildFolder, folder));
+    }
+  }
 
   // Replace all `@P/` with `/api/plugins_static/${ctx.pluginKey}/` in all `partials` and `components` files
   const replaceInCode = (code) => {

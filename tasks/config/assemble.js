@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const commentJson = require('comment-json');
+const babel = require('@babel/core');
 
 function replaceDollarWithHash(jsonObj) {
   if (Array.isArray(jsonObj)) {
@@ -57,9 +58,25 @@ const getHooks = (ctx) => {
   const dbHooks = {};
   hookFiles.forEach((hookFile) => {
     const hookFilePath = path.join(hooksFolder, hookFile);
-    const hookFileContent = eval(fs.readFileSync(hookFilePath, 'utf8'));
     const hookName = hookFile.split('.').slice(0, -1).join('.');
+    // Check if the file is updated (compare the last modified time from cache)
+    const lastModifiedTime = ctx.cache.get("HookFileLastModifiedTime"+hookFilePath);
+    const currentModified = fs.statSync(hookFilePath).mtime.getTime();
+    if (lastModifiedTime && lastModifiedTime === currentModified) {
+      dbHooks[hookName] = ctx.cache.get("HookFileContent"+hookFilePath);
+      return;
+    } else {
+      ctx.cache.set("HookFileLastModifiedTime"+hookFilePath, currentModified);
+    }
+
+    const hookFileContent = eval(fs.readFileSync(hookFilePath, 'utf8'));
     const hook = replaceDollarWithHash(hookFileContent);
+    if(typeof hook.action === 'string') {
+      hook.action = babel.transformSync(hook.action, {
+        presets: ['@babel/preset-env'],
+      }).code;
+    }
+    ctx.cache.set("HookFileContent"+hookFilePath, hook);
     dbHooks[hookName] = hook;
   });
 
@@ -83,6 +100,12 @@ const getSettingsData = (ctx) => {
 };
 
 module.exports = async (ctx) => {
+  const originalDirectory = process.cwd();
+  const packageDirectory = path.resolve(__dirname);
+
+  // Switch to the package directory
+  process.chdir(packageDirectory);
+
   // Database data
   const dbSeed = getSeed(ctx);
   const dbSchema = getSchema(ctx);
@@ -91,6 +114,8 @@ module.exports = async (ctx) => {
   // Settings data
   const settingsSchema = getSettingsSchema(ctx);
   const settingsData = getSettingsData(ctx);
+
+  process.chdir(originalDirectory);
 
   return {
     dbSeed,

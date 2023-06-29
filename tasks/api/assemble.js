@@ -6,13 +6,13 @@ function wrapFunctionInAsyncFunction(fn) {
   return `async function asyncFN () { ${fn} }; asyncFN();`;
 }
 
-function getRoutes(ctx) {
+function getRoutes(ctx, isLastError) {
   // Routes are defined in `api/routes.js`, the file should be executed and the exported array returned to be saved
   const routesFile = path.join(ctx.pluginDir, 'api', 'routes.js');
   // Check if the file is updated (compare the last modified time from cache)
   const lastModified = ctx.cache.get('routesFileLastModified');
   const currentModified = fs.statSync(routesFile).mtime.getTime();
-  if (lastModified && lastModified === currentModified) {
+  if ((lastModified && lastModified === currentModified) && !isLastError) {
     return ctx.cache.get('routes-file');
   } else {
     ctx.cache.set('routesFileLastModified', currentModified);
@@ -54,7 +54,7 @@ function getControllers(ctx) {
         // Check if the file is updated (compare the last modified time from cache)
         const lastModified = ctx.cache.get(`controllerFileLastModified-${controllerFile}`);
         const currentModified = fs.statSync(controllerFile).mtime.getTime();
-        if (lastModified && lastModified === currentModified) {
+        if ((lastModified && lastModified === currentModified) && !isLastError) {
           controllers[className] = ctx.cache.get(`controllerFile-${controllerFile}`);
           return;
         } else {
@@ -80,16 +80,20 @@ function getControllers(ctx) {
 };
 
 module.exports = async (ctx) => {
+  const isLastError = ctx.cache.get('api-assembling-error');
+  ctx.cache.set('api-assembling-error', true); // If do not reach end of the function, it means there is an error
   const originalDirectory = process.cwd();
   const packageDirectory = path.resolve(__dirname);
 
   // Switch to the package directory
   process.chdir(packageDirectory);
 
-  const routes = getRoutes(ctx);
-  const controllers = getControllers(ctx);
+  const routes = getRoutes(ctx, isLastError);
+  const controllers = getControllers(ctx, isLastError);
 
   process.chdir(originalDirectory);
+
+  ctx.cache.set('api-assembling-error', false); // If reach end of the function, it means there is no error
   
   return {
     routes,

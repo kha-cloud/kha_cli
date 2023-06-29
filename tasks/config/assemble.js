@@ -50,7 +50,7 @@ const getSchema = (ctx) => {
   return dbSchema;
 };
 
-const getHooks = (ctx) => {
+const getHooks = (ctx, isLastError) => {
   const hooksFolder = path.join(ctx.pluginDir, 'config', 'database', 'hooks');
   const hookFiles = fs.readdirSync(hooksFolder).filter((file) => {
     return file.endsWith('.js');
@@ -62,7 +62,7 @@ const getHooks = (ctx) => {
     // Check if the file is updated (compare the last modified time from cache)
     const lastModifiedTime = ctx.cache.get("HookFileLastModifiedTime"+hookFilePath);
     const currentModified = fs.statSync(hookFilePath).mtime.getTime();
-    if (lastModifiedTime && lastModifiedTime === currentModified) {
+    if ((lastModifiedTime && lastModifiedTime === currentModified) && !isLastError) {
       dbHooks[hookName] = ctx.cache.get("HookFileContent"+hookFilePath);
       return;
     } else {
@@ -100,6 +100,9 @@ const getSettingsData = (ctx) => {
 };
 
 module.exports = async (ctx) => {
+  const isLastError = ctx.cache.get('config-assembling-error');
+  ctx.cache.set('config-assembling-error', true); // If do not reach end of the function, it means there is an error
+
   const originalDirectory = process.cwd();
   const packageDirectory = path.resolve(__dirname);
 
@@ -108,14 +111,16 @@ module.exports = async (ctx) => {
 
   // Database data
   const dbSeed = getSeed(ctx);
-  const dbSchema = getSchema(ctx);
-  const dbHooks = getHooks(ctx);
+  const dbSchema = getSchema(ctx,);
+  const dbHooks = getHooks(ctx, isLastError);
 
   // Settings data
   const settingsSchema = getSettingsSchema(ctx);
   const settingsData = getSettingsData(ctx);
 
   process.chdir(originalDirectory);
+
+  ctx.cache.set('config-assembling-error', false);
 
   return {
     dbSeed,

@@ -22,6 +22,12 @@ npm install -g kha_plugins_cli
 > Set-ExecutionPolicy RemoteSigned
 > ```
 
+## Update
+  
+```bash
+npm update -g kha_plugins_cli
+```
+
 # Usage
 
 ## Configuration

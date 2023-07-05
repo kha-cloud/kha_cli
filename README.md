@@ -16,6 +16,12 @@ Documentation for Plugins development can be found [here](https://docs.cyberocea
 npm install -g kha_plugins_cli
 ```
 
+> ** For windows users: **
+> Open a command prompt as administrator and run the following command:
+> ```bach
+> Set-ExecutionPolicy RemoteSigned
+> ```
+
 # Usage
 
 ## Configuration

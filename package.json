@@ -1,6 +1,6 @@
 {
   "name": "kha_plugins_cli",
-  "version": "2.0.13",
+  "version": "2.0.14",
   "description": "KhaCloud Plugins CLI Tool for KhaCloud Plugins Development and Deployment",
   "main": "main.js",
   "scripts": {

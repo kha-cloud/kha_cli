@@ -97,7 +97,7 @@ function createBuildFolder(ctx, pages) {
 
   const content = /* xjs */`
   import Vue from "vue";
-  ${pages.map((cp) => `import ${cp.name} from "${path.join(buildFolder, cp.component)}";`).join("\n")}
+  ${pages.map((cp) => `import ${cp.name} from "${path.join(buildFolder, cp.component).replace(/\\/g, '/')}";`).join("\n")}
 
   console.log("=============================================");
   console.log("=============================================");

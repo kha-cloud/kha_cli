@@ -35,9 +35,18 @@ function createBuildFolder(ctx, pages) {
     }
   }
 
-  // Replace all `@P/` with `/api/plugins_static/${ctx.pluginKey}/` in all `pages` and `components` files
+  // Replace all `@PS/` with `/api/plugins_static/${ctx.pluginKey}/` in all `pages` and `components` files
   const replaceInCode = (code) => {
-    return code.replace(/@P\//g, `/api/plugins_static/${ctx.pluginKey}/`);
+    var newCode = code.replace(/@PS\//g, `/api/plugins_static/${ctx.pluginKey}/`);
+    // Plugins API links
+    newCode = newCode.replace(/@PA\//g, `/api/plugin_api/${ctx.pluginKey}/`);
+    // Plugins VueJS links
+    newCode = newCode.replace(/@PV\//g, `/p/${ctx.pluginKey}/`);
+    // Components imports
+    newCode = newCode.replace(/"@\//g, `"${buildFolder}/`);
+    newCode = newCode.replace(/'@\//g, `'${buildFolder}/`);
+    // TODO VueJS Components imports is Linux only COMPATIBILITY ISSUE
+    return newCode;
   };
   const recursiveFolderList = (folder) => {
     const files = fs.readdirSync(folder);

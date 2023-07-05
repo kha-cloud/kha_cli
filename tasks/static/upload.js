@@ -75,31 +75,36 @@ async function uploadFile(file_path, ctx) {
   const linux_file_path = ctx.helpers.stringToHex( formatToRemotePath(file_path, ctx) );
   const fileChecksum = await ctx.helpers.calculateChecksum(file_path);
 
-  /* NEW */const fileExtension = path.extname(file_path);
-  /* NEW */let data;
+  const fileExtension = path.extname(file_path);
+  let data;
   
-  /* NEW */const replaceInCode = (code) => {
-  /* NEW */  return code.replace(/@P\//g, `/api/plugins_static/${ctx.pluginKey}/`);
-  /* NEW */};
+  const replaceInCode = (code) => {
+    var newCode = code.replace(/@PS\//g, `/api/plugins_static/${ctx.pluginKey}/`);
+    // Plugins API links
+    newCode = newCode.replace(/@PA\//g, `/api/plugin_api/${ctx.pluginKey}/`);
+    // Plugins VueJS links
+    newCode = newCode.replace(/@PV\//g, `/p/${ctx.pluginKey}/`);
+    return newCode;
+  };
 
-  /* NEW */if (fileExtension === '.js' || fileExtension === '.css') {
-  /* NEW */  const fileContent = fs.readFileSync(file_path, 'utf-8');
-  /* NEW */  data = replaceInCode(fileContent);
-  /* NEW */} else {
-  /* NEW */  data = fs.createReadStream(file_path);
-  /* NEW */}
+  if (fileExtension === '.js' || fileExtension === '.css') {
+    const fileContent = fs.readFileSync(file_path, 'utf-8');
+    data = replaceInCode(fileContent);
+  } else {
+    data = fs.createReadStream(file_path);
+  }
 
   const form = new FormData();
   // form.append('file', fs.createReadStream(file_path));
 
-  /* NEW */if (fileExtension === '.js' || fileExtension === '.css') {
-  /* NEW */  form.append('file', data, { 
-  /* NEW */    filename: path.basename(file_path), 
-  /* NEW */    contentType: fileExtension === '.js' ? 'application/javascript' : 'text/css' 
-  /* NEW */  });
-  /* NEW */} else {
-  /* NEW */  form.append('file', data);
-  /* NEW */}
+  if (fileExtension === '.js' || fileExtension === '.css') {
+    form.append('file', data, { 
+      filename: path.basename(file_path), 
+      contentType: fileExtension === '.js' ? 'application/javascript' : 'text/css' 
+    });
+  } else {
+    form.append('file', data);
+  }
   
   try {
     const result = await ctx.helpers.dataCaller(

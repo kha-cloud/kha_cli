@@ -38,7 +38,7 @@ function getRoutes(ctx, isLastError) {
   }
 };
 
-function getControllers(ctx) {
+function getControllers(ctx, isLastError) {
   // Controllers are defined in the folder `api/controllers/`, the files should be executed and the exported object returned to be saved
   const controllersDir = path.join(ctx.pluginDir, 'api', 'controllers');
   if (fs.existsSync(controllersDir)) {

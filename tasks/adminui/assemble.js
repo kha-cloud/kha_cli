@@ -15,18 +15,39 @@ const getAdminUIMenus = (ctx) => {
   const menusFile = path.join(ctx.pluginDir, 'adminUI', 'menus.jsonc');
   const menusContent = fs.readFileSync(menusFile, 'utf8');
   const menus = commentJson.parse(menusContent);
+  if(!menus.mainMenu) menus.mainMenu = [];
+  if(!menus.profileMenu) menus.profileMenu = [];
+  
   menus.mainMenu = menus.mainMenu.map(menu => {
     if(!menu.to) return menu;
+    if(menu.to.startsWith('http')) return menu; // External link
+    if(menu.to.startsWith('@/')){ // Link to a page in the administration
+      return {
+        ...menu,
+        to: menu.to.slice(1),
+      };
+    }
+    var menuTo = menu.to.startsWith('/') ? menu.to : `/${menu.to}`;
+    menuTo = menuTo.startsWith('@PV/') ? menuTo.slice(4) : menuTo;
     return {
       ...menu,
-      to: `/p/${ctx.pluginKey}${menu.to}`,
+      to: `/p/${ctx.pluginKey}${menuTo}`,
     };
   });
   menus.profileMenu = menus.profileMenu.map(menu => {
     if(!menu.to) return menu;
+    if(menu.to.startsWith('http')) return menu; // External link
+    if(menu.to.startsWith('@/')){ // Link to a page in the administration
+      return {
+        ...menu,
+        to: menu.to.slice(1),
+      };
+    }
+    var menuTo = menu.to.startsWith('/') ? menu.to : `/${menu.to}`;
+    menuTo = menuTo.startsWith('@PV/') ? menuTo.slice(4) : menuTo;
     return {
       ...menu,
-      to: `/p/${ctx.pluginKey}${menu.to}`,
+      to: `/p/${ctx.pluginKey}${menuTo}`,
     };
   });
   return menus;
@@ -176,7 +197,12 @@ const getAdminUIScripts = (ctx) => {
           var script = fs.readFileSync(itemPath, 'utf8');
           const scriptName = item.slice(0, -3); // Remove the .js extension
           const replaceInCode = (code) => {
-            return code.replace(/@P\//g, `/api/plugins_static/${ctx.pluginKey}/`);
+            var newCode = code.replace(/@PS\//g, `/api/plugins_static/${ctx.pluginKey}/`);
+            // Plugins API links
+            newCode = newCode.replace(/@PA\//g, `/api/plugin_api/${ctx.pluginKey}/`);
+            // Plugins VueJS links
+            newCode = newCode.replace(/@PV\//g, `/p/${ctx.pluginKey}/`);
+            return newCode;
           };
           script = replaceInCode(script);
           scripts[scriptName] = script;

@@ -35,10 +35,12 @@ const getSeed = (ctx) => {
 
 const getSchema = (ctx) => {
   const modelsFolder = path.join(ctx.pluginDir, 'config', 'database', 'models');
+  const dbSchema = {};
+  if (!fs.existsSync(modelsFolder)) return dbSchema;
+
   const modelFiles = fs.readdirSync(modelsFolder).filter((file) => {
     return file.endsWith('.jsonc');
   });
-  const dbSchema = {};
   modelFiles.forEach((modelFile) => {
     const modelFilePath = path.join(modelsFolder, modelFile);
     const modelFileContent = fs.readFileSync(modelFilePath, 'utf8');
@@ -52,10 +54,12 @@ const getSchema = (ctx) => {
 
 const getHooks = (ctx, isLastError) => {
   const hooksFolder = path.join(ctx.pluginDir, 'config', 'database', 'hooks');
+  const dbHooks = {};
+  if (!fs.existsSync(hooksFolder)) return dbHooks;
+  
   const hookFiles = fs.readdirSync(hooksFolder).filter((file) => {
     return file.endsWith('.js');
   });
-  const dbHooks = {};
   hookFiles.forEach((hookFile) => {
     const hookFilePath = path.join(hooksFolder, hookFile);
     const hookName = hookFile.split('.').slice(0, -1).join('.');

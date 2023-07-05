@@ -17,7 +17,7 @@ const getAdminUIMenus = (ctx) => {
   const menus = commentJson.parse(menusContent);
   if(!menus.mainMenu) menus.mainMenu = [];
   if(!menus.profileMenu) menus.profileMenu = [];
-  
+
   menus.mainMenu = menus.mainMenu.map(menu => {
     if(!menu.to) return menu;
     if(menu.to.startsWith('http')) return menu; // External link
@@ -175,6 +175,8 @@ const getAdminUIScripts = (ctx) => {
   // Loading the scripts
   const scriptsFolder = path.join(ctx.pluginDir, 'adminUI', 'scripts');
   const scripts = {};
+
+  if(!fs.existsSync(scriptsFolder)) return scripts;
 
   // Loading the scripts recursively
   const loadScripts = (ctx, folder) => {

@@ -7,6 +7,7 @@ const commentJson = require('comment-json');
 const uploadPlugin = require('./tasks/upload');
 const listenForChanges = require('./tasks/listenForChanges');
 const initPlugin = require('./tasks/initPlugin');
+const queryAi = require('./tasks/queryAi');
 const helpers = require('./helpers');
 
 
@@ -23,6 +24,7 @@ if(!fs.existsSync(path.join(pluginDir, 'plugin.jsonc'))) {
     isInit = true;
     initPlugin({
       pluginDir,
+      helpers,
     }).then(() => {
       process.exit(1);
     });
@@ -46,6 +48,8 @@ function main() {
   console.log('Available commands:');
   console.log('    upload');
   console.log('    listen');
+  console.log('    init');
+  console.log('    ai');
   console.log();
   // console.log('rootDir = ', rootDir);
   // console.log('command = ', command);
@@ -64,8 +68,8 @@ async function run() {
 
   var clientCache = helpers.createCacheObject("client_"+helpers.slugify(khaConfig.url.replace("https://", ""))+"_cache", pluginDir);
 
-  //TODO Load Cache (Last Upload Date, File Hashes, etc.)
-
+  var thirdPartyCache = helpers.createCacheObject("third_party_cache", pluginDir);
+  
   var context = {
     rootDir,
     command,
@@ -75,6 +79,7 @@ async function run() {
     khaConfig,
     cache,
     clientCache,
+    thirdPartyCache,
     helpers: null
   };
   context.helpers = {
@@ -87,6 +92,8 @@ async function run() {
     uploadPlugin(context);
   }else if (command === 'listen') {
     listenForChanges(context);
+  }else if (command === 'ai') {
+    queryAi(context);
   }else {
     main();
   }

@@ -1,0 +1,20 @@
+- Create a purchase invoices management, Where each invoice have the invoice number, invoice's total price, image (picture of the invoice), provider ...
+- the user can add a new invoice, edit an existing one, delete an invoice, and view all invoices
+- the user can filter and sort invoices by date, invoice number, total price
+- the user can download an invoice
+- An overview page for invoices, with the total number of invoices, total price, and the number of invoices per month
+- The user can add a new provider, edit an existing one, delete a provider, and view all providers
+- The user can filter and search providers by name, email, phone number
+
+
+-----------------------------------------------------------------
+
+AI Task: From the above request, what are the requested parts to be created from the following parts:
+- [API] => (API, Server SocketIO, Models, Controllers, Routes)
+- [ADMINUI] => (Frontend, Pages, Components, Store, Router, Dashboard menus
+- [CONFIGS] => (Database, Data seeds, Controllers, Middlewares, Routes, Helpers)
+- [MOBILE] =>  
+- [WEB]
+
+
+

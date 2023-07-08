@@ -23,7 +23,7 @@ module.exports = async (ctx) => {
     type: 'input',
     name: 'pluginName',
     message: 'What is the name of the plugin?',
-    default: path.basename(ctx.pluginDir)
+    default: ctx.helpers.unSlugify(path.basename(ctx.pluginDir))
   });
 
   // Ask for the plugin key (suggesting the plugin name in snake_case)
@@ -75,13 +75,22 @@ module.exports = async (ctx) => {
     type: 'input',
     name: 'appToken',
     message: 'What is the token of the app (Optional)?',
-    default: 'your-auth-token'
+    default: '<your-auth-token>'
+  });
+
+  // Ask for the OpenAi's token (Optional)
+  const openAiToken = await inquirer.prompt({
+    type: 'input',
+    name: 'openAiToken',
+    message: 'What is the token for OpenAi (Optional)?',
+    default: '<OPTIONAL-your-openai-token>'
   });
 
   // Create the `kha-plugin-config.jsonc`
   const khaPluginConfigJsonc = {
     url: appUrl.appUrl,
     token: appToken.appToken,
+    openai_key: openAiToken.openAiToken,
   };
   fs.writeFileSync(path.join(ctx.pluginDir, 'kha-plugin-config.jsonc'), JSON.stringify(khaPluginConfigJsonc, null, 2));
 
@@ -103,9 +112,13 @@ module.exports = async (ctx) => {
       // Folders
       fs.mkdirSync(path.join(ctx.pluginDir, 'adminUI'));
       fs.mkdirSync(path.join(ctx.pluginDir, 'adminUI', 'pages'));
+      fs.writeFileSync(path.join(ctx.pluginDir, 'adminUI', 'pages', '.gitkeep'), '');
       fs.mkdirSync(path.join(ctx.pluginDir, 'adminUI', 'components'));
+      fs.writeFileSync(path.join(ctx.pluginDir, 'adminUI', 'components', '.gitkeep'), '');
       fs.mkdirSync(path.join(ctx.pluginDir, 'adminUI', 'partials'));
+      fs.writeFileSync(path.join(ctx.pluginDir, 'adminUI', 'partials', '.gitkeep'), '');
       fs.mkdirSync(path.join(ctx.pluginDir, 'adminUI', 'scripts'));
+      fs.writeFileSync(path.join(ctx.pluginDir, 'adminUI', 'scripts', '.gitkeep'), '');
 
       // Files
       fs.writeFileSync(path.join(ctx.pluginDir, 'adminUI', 'config.jsonc'), "{}");
@@ -138,6 +151,7 @@ module.exports = async (ctx) => {
       // Folders
       fs.mkdirSync(path.join(ctx.pluginDir, 'api'));
       fs.mkdirSync(path.join(ctx.pluginDir, 'api', 'controllers'));
+      fs.writeFileSync(path.join(ctx.pluginDir, 'api', 'controllers', '.gitkeep'), '');
 
       // Files
       fs.writeFileSync(path.join(ctx.pluginDir, 'api', 'io.js'), `// Code directly here`);
@@ -159,7 +173,9 @@ module.exports = async (ctx) => {
       fs.mkdirSync(path.join(ctx.pluginDir, 'config'));
       fs.mkdirSync(path.join(ctx.pluginDir, 'config', 'database'));
       fs.mkdirSync(path.join(ctx.pluginDir, 'config', 'database', 'hooks'));
+      fs.writeFileSync(path.join(ctx.pluginDir, 'config', 'database', 'hooks', '.gitkeep'), '');
       fs.mkdirSync(path.join(ctx.pluginDir, 'config', 'database', 'models'));
+      fs.writeFileSync(path.join(ctx.pluginDir, 'config', 'database', 'models', '.gitkeep'), '');
       fs.mkdirSync(path.join(ctx.pluginDir, 'config', 'settings'));
 
       // Files

@@ -47,3 +47,7 @@ Listens for changes in your work and uploads them to the website
 ### `khap init`
 
 Initializes a new Kha Plugins project
+
+### `khap ai`
+
+Runs an AI task, It's based on OpenAI's GPT-3 API, Some tasks require GPT-3 16K model, OpenAI key is required

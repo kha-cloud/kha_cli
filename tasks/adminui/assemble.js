@@ -200,6 +200,8 @@ const getAdminUIScripts = (ctx) => {
           const scriptName = item.slice(0, -3); // Remove the .js extension
           const replaceInCode = (code) => {
             var newCode = code.replace(/@PS\//g, `/api/plugins_static/${ctx.pluginKey}/`);
+            // Plugins Key
+            newCode = newCode.replace(/@PK/g, `${ctx.pluginKey}`);
             // Plugins API links
             newCode = newCode.replace(/@PA\//g, `/api/plugin_api/${ctx.pluginKey}/`);
             // Plugins VueJS links

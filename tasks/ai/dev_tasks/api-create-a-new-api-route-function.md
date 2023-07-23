@@ -1,7 +1,7 @@
 ### TITLE
 AdminUI - Create a new api route endpoint
 ### DESCRIPTION
-Create a new api route (endpoint), the route is a simple JSON object in JSONC format
+Create a new api route function (endpoint), the route is a simple JSON object in JSONC format
 ### REQUIREMENTS
 method: string, // (REQUIRED) The method for the route (GET, POST, PUT, DELETE)
 route: string, // (REQUIRED) The route for the api endpoint (SnakeCase) [Based on ExpressJS]

@@ -123,18 +123,19 @@ module.exports = async (ctx) => {
       // Files
       fs.writeFileSync(path.join(ctx.pluginDir, 'adminUI', 'config.jsonc'), "{}");
       fs.writeFileSync(path.join(ctx.pluginDir, 'adminUI', 'menus.jsonc'), "{}");
-      fs.writeFileSync(path.join(ctx.pluginDir, 'adminUI', 'store.js'), `
-      module.exports = {
-        state: () => ({
-        }),
-        mutations: {
-        },
-        actions: {
-        },
-        getters: {
-        },
-      };
-      `);
+      fs.writeFileSync(path.join(ctx.pluginDir, 'adminUI', 'store.js'),
+      `module.exports = {\n`+
+      `  namespaced: true,\n`+
+      `  state: () => ({\n`+
+      `  }),\n`+
+      `  mutations: {\n`+
+      `  },\n`+
+      `  actions: {\n`+
+      `  },\n`+
+      `  getters: {\n`+
+      `  },\n`+
+      `};\n`+
+      ``);
     }
   }
 

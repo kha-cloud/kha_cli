@@ -38,6 +38,8 @@ function createBuildFolder(ctx, partials) {
   // Replace all `@PS/` with `/api/plugins_static/${ctx.pluginKey}/` in all `partials` and `components` files
   const replaceInCode = (code) => {
     var newCode = code.replace(/@PS\//g, `/api/plugins_static/${ctx.pluginKey}/`);
+    // Plugins Key
+    newCode = newCode.replace(/@PK/g, `${ctx.pluginKey}`);
     // Plugins API links
     newCode = newCode.replace(/@PA\//g, `/api/plugin_api/${ctx.pluginKey}/`);
     // Plugins VueJS links

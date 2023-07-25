@@ -22,7 +22,21 @@ function getRoutes(ctx, isLastError) {
     // if this function will be called multiple times, it should require the file each time to get the latest version
     // do not use `require` here, it will cache the file and not get the latest version
     // instead, use `eval` to execute the file and return the exported array
-    const routes = eval(fs.readFileSync(routesFile, "utf8"));
+
+    const replaceInCode = (code) => {
+      var newCode = code.replace(/@PS\//g, `/api/plugins_static/${ctx.pluginKey}/`);
+      // Plugins Key
+      newCode = newCode.replace(/@PK/g, `${ctx.pluginKey}`);
+      // Plugins API links
+      newCode = newCode.replace(/@PA\//g, `/api/plugin_api/${ctx.pluginKey}/`);
+      // Plugins VueJS links
+      newCode = newCode.replace(/@PV\//g, `/p/${ctx.pluginKey}/`);
+      return newCode;
+    };
+  
+    var routesFileContent = fs.readFileSync(routesFile, "utf8");
+    routesFileContent = replaceInCode(routesFileContent);
+    const routes = eval(routesFileContent);
     for(var i = 0; i < routes.length; i++) {
       if(routes[i].function) {
         routes[i].function = babel.transformSync(wrapFunctionInAsyncFunction(routes[i].function), {
@@ -60,7 +74,22 @@ function getControllers(ctx, isLastError) {
         } else {
           ctx.cache.set(`controllerFileLastModified-${controllerFile}`, currentModified);
         }
-        const controllerContent = eval(fs.readFileSync(controllerFile, "utf8"));
+
+        const replaceInCode = (code) => {
+          var newCode = code.replace(/@PS\//g, `/api/plugins_static/${ctx.pluginKey}/`);
+          // Plugins Key
+          newCode = newCode.replace(/@PK/g, `${ctx.pluginKey}`);
+          // Plugins API links
+          newCode = newCode.replace(/@PA\//g, `/api/plugin_api/${ctx.pluginKey}/`);
+          // Plugins VueJS links
+          newCode = newCode.replace(/@PV\//g, `/p/${ctx.pluginKey}/`);
+          return newCode;
+        };
+
+        var controllerFileContent = fs.readFileSync(controllerFile, "utf8");
+        controllerFileContent = replaceInCode(controllerFileContent);
+
+        const controllerContent = eval(controllerFileContent);
         for(var key in controllerContent) {
           if(typeof controllerContent[key] === 'string') {
             controllerContent[key] = babel.transformSync(wrapFunctionInAsyncFunction(controllerContent[key]), {

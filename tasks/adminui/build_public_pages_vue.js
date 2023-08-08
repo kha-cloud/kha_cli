@@ -6,17 +6,17 @@ const path = require("path");
 const rootDir = process.cwd();
 
 function deleteEntryJsFile(ctx) {
-  const entryJsFile = path.join(ctx.pluginDir, ".cache", "build", "entry.js");
+  const entryJsFile = path.join(ctx.pluginDir, ".cache", "build", "public_pages_entry.js");
   if (fs.existsSync(entryJsFile)) {
     fs.unlinkSync(entryJsFile);
   }
 }
 
-function createBuildFolder(ctx, pages, uiComponents) {
-  // const adminUIFolder = path.join(__dirname, "..", "plugins", pluginKey, "adminUi", "pages");
+function createBuildFolder(ctx, public_pages, uiComponents) {
+  // const adminUIFolder = path.join(__dirname, "..", "plugins", pluginKey, "adminUi", "public_pages");
   const adminUIFolder = path.join(ctx.pluginDir, "adminUI");
   const buildFolder = path.join(ctx.pluginDir, ".cache", "build");
-  const entryJsFile = path.join(buildFolder, "entry.js");
+  const entryJsFile = path.join(buildFolder, "public_pages_entry.js");
 
   // Create the `dist` and `build` folders if it doesn't exist
   if (!fs.existsSync(path.join(ctx.pluginDir, ".cache", "dist"))) {
@@ -26,8 +26,8 @@ function createBuildFolder(ctx, pages, uiComponents) {
     fs.mkdirSync(path.join(ctx.pluginDir, ".cache", "build"));
   }
 
-  // Copy `pages` and `components` folders to `build` folder
-  // fs.copySync(path.join(adminUIFolder, "pages"), path.join(buildFolder, "pages"));
+  // Copy `public_pages` folder to `build` folder
+  // fs.copySync(path.join(adminUIFolder, "public_pages"), path.join(buildFolder, "public_pages"));
   // fs.copySync(path.join(adminUIFolder, "components"), path.join(buildFolder, "components"));
   for (let folder of fs.readdirSync(adminUIFolder)) {
     if (folder !== "node_modules") {
@@ -35,7 +35,7 @@ function createBuildFolder(ctx, pages, uiComponents) {
     }
   }
 
-  // Replace all `@PS/` with `/api/plugins_static/${ctx.pluginKey}/` in all `pages` and `components` files
+  // Replace all `@PS/` with `/api/plugins_static/${ctx.pluginKey}/` in all `public_pages` and `components` files
   const replaceInCode = (code) => {
     var newCode = code.replace(/@PS\//g, `/api/plugins_static/${ctx.pluginKey}/`);
     // Plugins Key
@@ -64,13 +64,13 @@ function createBuildFolder(ctx, pages, uiComponents) {
       }
     });
   };
-  recursiveFolderList(path.join(buildFolder, "pages"));
+  recursiveFolderList(path.join(buildFolder, "public_pages"));
   recursiveFolderList(path.join(buildFolder, "components"));
 
   var vuetifyComponentsToImport = [];
-  pages.forEach((page) => {
+  public_pages.forEach((public_page) => {
     // Loading the required Vuetify components
-    const componentCode = fs.readFileSync(path.join(buildFolder, page.component), "utf8");
+    const componentCode = fs.readFileSync(path.join(buildFolder, public_page.component), "utf8");
     // Search in componentCode for the Vuetify components names prefixed with "<v-" [Important: Components names could only contain upper case and lower case letters and dashes]
     // const vuetifyComponents = componentCode.match(/v-([a-z]|[A-Z]|-)+/g);
     const vuetifyComponents = (componentCode.match(/<v-([a-z]|[A-Z]|-)+/g) || []).map((vuetifyComponent) => vuetifyComponent.slice(1));
@@ -112,41 +112,53 @@ function createBuildFolder(ctx, pages, uiComponents) {
 
   const content = /* xjs */`
   import Vue from "vue";
-  ${pages.map((cp) => `import ${cp.name} from "${path.join(buildFolder, cp.component).replace(/\\/g, '/')}";`).join("\n")}
+  ${public_pages.map((cp) => `import ${cp.name} from "${path.join(buildFolder, cp.component)}";`).join("\n")}
 
   console.log("=============================================");
   console.log("=============================================");
-  console.log("           ${ctx.pluginKey} plugin loaded");
+  console.log("           ${ctx.pluginKey} plugin public_pages loaded");
   console.log("=============================================");
   console.log("=============================================");
 
   // Get global cache value for calling components
   const cp_cache_key = $nuxt.$store.state.plugins.components_cache_key;
 
-  // Creating components (pages)
+  // Creating components (public_pages)
   const Components = {};
-  ${pages.map((cp) => `Components["cp_"+cp_cache_key+"_${cp.name}"] = {
+  ${public_pages.map((cp) => `Components["cpublic_page_"+cp_cache_key+"_${cp.name}"] = {
     ...${cp.name},
-    props: {
-      ...(${cp.name}.props || {}),
-      params: {
-        type: Object,
-        default: () => ({})
-      },
-    },
-    name: "cp_"+cp_cache_key+"_${cp.name}"
+    // props: {
+    //   ...(${cp.name}.props || {}),
+    //   params: {
+    //     type: Object,
+    //     default: () => ({})
+    //   },
+    // },
+    name: "cpublic_page_"+cp_cache_key+"_${cp.name}"
   }`).join(";\n")}
 
+  // Registering components
   Object.keys(Components).forEach(name=>{
     $nuxt.$vue_instance_for_plugins.component(Components[name].name, Components[name]);
-    console.log("Page component "+Components[name].name+" is ready");
-  })
+    console.log("PublicPage component "+Components[name].name+" is ready");
+  });
+
+  // // Informing the store about the public_pages
+  // Object.keys(Components).forEach(name=>{
+  //   $nuxt.$store.dispatch('plugins/pluginAddPublicPage', {
+  //     pluginKey: '${ctx.pluginKey}',
+  //     public_pageKey: Components[name].key,
+  //     componentName: Components[name].name,
+  //   });
+  //   // $nuxt.$vue_instance_for_plugins.component(Components[name].name, Components[name]);
+  //   // console.log("PublicPage component "+Components[name].name+" is ready");
+  // });
 
   const vuetifyComponentsToImport = ${JSON.stringify(vuetifyComponentsToImport)};
 
   $nuxt.$store.dispatch('plugins/pluginLoadRequiredVuetifyComponents', { vuetifyComponentsToImport, key: '${ctx.pluginKey}' }).then(() => {
     
-    $nuxt.$store.dispatch('plugins/pluginLoaded', { key: '${ctx.pluginKey}' });
+    // $nuxt.$store.dispatch('plugins/pluginLoadPublicPages', { key: '${ctx.pluginKey}' });
 
   });
 
@@ -160,7 +172,7 @@ function createBuildFolder(ctx, pages, uiComponents) {
 
 async function buildPlugin(ctx) {
   const distFolder = path.join(ctx.pluginDir, ".cache", "dist");
-  const entryJsFile = path.join(ctx.pluginDir, ".cache", "build", "entry.js");
+  const entryJsFile = path.join(ctx.pluginDir, ".cache", "build", "public_pages_entry.js");
   return new Promise((resolve, reject) => {
     // const packageDirectory = path.resolve(__dirname);
 
@@ -247,21 +259,21 @@ function readCompiledFiles(ctx) {
   };
 }
 
-const compilePagesVue = async (ctx, pages, uiComponents, options = {}) => {
-  // console.log("Creating entry.js file...");
-  createBuildFolder(ctx, pages, uiComponents);
+const compilePublicPagesVue = async (ctx, public_pages, uiComponents, options = {}) => {
+  // console.log("Creating public_pages_entry.js file...");
+  createBuildFolder(ctx, public_pages, uiComponents);
   // console.log("Building plugin...");
-  const res = await buildPlugin(ctx, pages);
+  const res = await buildPlugin(ctx, public_pages);
   if(res.includes("error")) {
     return false;
   }
-  // console.log("Deleting entry.js file...");
+  // console.log("Deleting public_pages_entry.js file...");
   deleteEntryJsFile(ctx);
   // console.log("Reading compiled files...");
-  const compiled = readCompiledFiles(ctx, pages);
+  const compiled = readCompiledFiles(ctx, public_pages);
   return compiled;
 };
 
 module.exports = {
-  compilePagesVue,
+  compilePublicPagesVue,
 };

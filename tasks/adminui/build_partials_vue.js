@@ -12,7 +12,7 @@ function deleteEntryJsFile(ctx) {
   }
 }
 
-function createBuildFolder(ctx, partials) {
+function createBuildFolder(ctx, partials, uiComponents) {
   // const adminUIFolder = path.join(__dirname, "..", "plugins", pluginKey, "adminUi", "partials");
   const adminUIFolder = path.join(ctx.pluginDir, "adminUI");
   const buildFolder = path.join(ctx.pluginDir, ".cache", "build");
@@ -74,6 +74,19 @@ function createBuildFolder(ctx, partials) {
     // Search in componentCode for the Vuetify components names prefixed with "<v-" [Important: Components names could only contain upper case and lower case letters and dashes]
     // const vuetifyComponents = componentCode.match(/v-([a-z]|[A-Z]|-)+/g);
     const vuetifyComponents = (componentCode.match(/<v-([a-z]|[A-Z]|-)+/g) || []).map((vuetifyComponent) => vuetifyComponent.slice(1));
+    if (vuetifyComponents) {
+      vuetifyComponents.forEach((vuetifyComponent) => {
+        if (!vuetifyComponentsToImport.includes(vuetifyComponent)) {
+          vuetifyComponentsToImport.push(vuetifyComponent);
+        }
+      });
+    }
+  });
+  // uiComponents
+  uiComponents.forEach((uiComponent) => {
+    const uiComponentCode = fs.readFileSync(path.join(buildFolder, uiComponent.component), "utf8");
+    
+    const vuetifyComponents = (uiComponentCode.match(/<v-([a-z]|[A-Z]|-)+/g) || []).map((vuetifyComponent) => vuetifyComponent.slice(1));
     if (vuetifyComponents) {
       vuetifyComponents.forEach((vuetifyComponent) => {
         if (!vuetifyComponentsToImport.includes(vuetifyComponent)) {
@@ -246,9 +259,9 @@ function readCompiledFiles(ctx) {
   };
 }
 
-const compilePartialsVue = async (ctx, partials, options = {}) => {
+const compilePartialsVue = async (ctx, partials, uiComponents, options = {}) => {
   // console.log("Creating partials_entry.js file...");
-  createBuildFolder(ctx, partials);
+  createBuildFolder(ctx, partials, uiComponents);
   // console.log("Building plugin...");
   const res = await buildPlugin(ctx, partials);
   if(res.includes("error")) {

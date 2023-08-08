@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const commentJson = require('comment-json');
 const { compilePagesVue } = require('./build_pages_vue');
+const { compilePublicPagesVue } = require('./build_public_pages_vue');
 const { compilePartialsVue } = require('./build_partials_vue');
 
 const getAdminUIConfig = (ctx) => {
@@ -59,6 +60,134 @@ const getAdminUIStore = (ctx) => {
   return storeContent;
 };
 
+const getAdminUIComponents = (ctx, pages, partials) => {
+  // Example of reading a page or a partial file
+  // const pageFile = path.join(ctx.pluginDir, 'adminUI', pages[0].component);
+
+  // Extract the components imported by a component
+  const extractComponentDependencies = (componentPath, ignoreList) => {
+    // console.log("  > Extracting dependencies for component: ", componentPath);
+    if(ignoreList && ignoreList.has(componentPath)){
+      // console.log("    - Ignoring component: ", componentPath);
+      return new Set();
+    }
+    const componentFile = path.join(ctx.pluginDir, 'adminUI', 'components', componentPath);
+    const componentContent = fs.readFileSync(componentFile, 'utf-8');
+    
+    const regex = /import\s+\w+\s+from\s+(["'])(.*?)(\/(.*?)\.vue)?(["'])/g;
+
+    const dependencies = new Set();
+    let match;
+    // console.log("    - Total dependencies matches: ", (componentContent.match(regex) || []).length);
+    while ((match = regex.exec(componentContent)) !== null) {
+      var dependency;
+      var dependencyImportStatement = match[0];
+      if(dependencyImportStatement.includes('@/')){
+        dependency = dependencyImportStatement.split('@/components/')[1];
+      } else {
+        dependency = dependencyImportStatement.split('from ')[1];
+        dependency = dependency.replace(/['"]+/g, '').replace(/;+/g, '').trim();
+        dependency = path.join(path.dirname(componentFile), dependency);
+        dependency = path.relative(path.join(ctx.pluginDir, 'adminUI', 'components'), dependency);
+      }
+      dependencies.add(dependency);
+      const subDependencies = extractComponentDependencies(dependency, dependencies);
+      subDependencies.forEach((subDependency) => dependencies.add(subDependency));
+    }
+
+    return dependencies;
+  };
+
+
+  // Extract imported components from a folder
+  const extractImports = (folder) => {
+    // console.log("Extracting imports from folder: ", folder);
+    const imports = new Set();
+    const folderContent = fs.readdirSync(folder);
+
+    folderContent.forEach((item) => {
+      const itemPath = path.join(folder, item);
+
+      // Check if the item is a folder, and recurse if so
+      if (fs.lstatSync(itemPath).isDirectory()) {
+        const subImports = extractImports(itemPath);
+        subImports.forEach((importedComponent) => imports.add(importedComponent));
+      } else if (item.endsWith('.vue')) {
+        // Read the file content
+        const content = fs.readFileSync(itemPath, 'utf-8');
+        // Use regex to extract all the import paths
+        const regex = /import\s+\w+\s+from\s+(["'])@\/components\/(.*?)\.vue(["'])/g;
+        let match;
+        // console.log("- Total imports matches: ", (content.match(regex) || []).length);
+        while ((match = regex.exec(content)) !== null) {
+          const componentPath = match[2]+'.vue';
+          imports.add(componentPath);
+          const importDependencies = extractComponentDependencies(componentPath);
+          importDependencies.forEach((importedComponent) => imports.add(importedComponent));
+        }
+      }
+    });
+
+    return imports;
+  };
+
+  // Loading the components
+  const componentsFolder = path.join(ctx.pluginDir, 'adminUI', 'components');
+  const pagesFolder = path.join(ctx.pluginDir, 'adminUI', 'pages');
+  const public_pagesFolder = path.join(ctx.pluginDir, 'adminUI', 'public_pages');
+  const partialsFolder = path.join(ctx.pluginDir, 'adminUI', 'partials');
+
+  const components = [];
+
+  // Extract all components imported by pages and partials
+  const pageImports = extractImports(pagesFolder);
+  const public_pageImports = extractImports(public_pagesFolder);
+  const partialImports = extractImports(partialsFolder);
+
+  // Loading the components recursively
+  const loadComponents = (ctx, folder) => {
+    // Get the folder content
+    const folderContent = fs.readdirSync(folder);
+    // Iterate over the folder content
+    folderContent.forEach((item) => {
+      // Get the item path
+      const itemPath = path.join(folder, item);
+
+      // Check if the item is a folder
+      if (fs.lstatSync(itemPath).isDirectory()) {
+        // If the item is a folder, then load the components from the folder
+        loadComponents(ctx, itemPath);
+      } else {
+        // If the item is a file, then check if it's a component (ends with .vue)
+        if (item.endsWith('.vue')) {
+          // If item size is 9 bytes or less, then it's an empty file, so ignore it
+          const itemState = fs.statSync(itemPath);
+          if(itemState.size <= 9) return;
+          const componentRelPath = itemPath.replace(path.join(ctx.pluginDir, 'adminUI', 'components'), '').replace(/\\/g, '/').slice(1);
+          const component = {
+            component: itemPath.replace(path.join(ctx.pluginDir, 'adminUI'), '').replace(/\\/g, '/'),
+            updated: false,
+            name: '',
+            importedByPages: pageImports.has(componentRelPath),
+            importedByPublicPages: public_pageImports.has(componentRelPath),
+            importedByPartials: partialImports.has(componentRelPath),
+            // relativePath: itemPath.replace(path.join(ctx.pluginDir, 'adminUI', ctx.pluginKey), ''),
+          };
+          component.name = ctx.helpers.slugify(ctx.pluginKey+component.component).replace(/-/g, '_');
+          const cache_updated_date = ctx.cache.get(`adminui_component_${component.component}_updated`);
+          const updated_date = itemState.mtime.getTime();
+          component.updated = (cache_updated_date !== updated_date);
+          if(component.updated) ctx.cache.set(`adminui_component_${component.component}_updated`, updated_date);
+          components.push(component);
+        }
+      }
+    });
+  };
+
+  loadComponents(ctx, componentsFolder);
+  return components;
+};
+
 const getAdminUIPages = (ctx) => {
   // The pages are loaded from the pages folder and it's subfolders, and the routes are generated from the folder structure
   // Use a recursive function to load the pages
@@ -70,6 +199,73 @@ const getAdminUIPages = (ctx) => {
 
   // Loading the pages
   const pagesFolder = path.join(ctx.pluginDir, 'adminUI', 'pages');
+  const pages = [];
+
+  // Loading the pages recursively
+  const loadPages = (ctx, folder, parentRoute = '') => {
+    // Get the folder content
+    const folderContent = fs.readdirSync(folder);
+    // Iterate over the folder content
+    folderContent.forEach((item) => {
+      // Get the item path
+      const itemPath = path.join(folder, item);
+
+      // Check if the item is a folder
+      if (fs.lstatSync(itemPath).isDirectory()) {
+        // If the item is a folder, then load the pages from the folder
+        const newItemName = item.startsWith('_') ? ":" + item.slice(1) : item; // Replace the _ with : to make it a parameter
+        loadPages(ctx, itemPath, path.join(parentRoute, newItemName));
+      } else {
+        // If the item is a file, then check if it's a page (ends with .vue)
+        if (item.endsWith('.vue')) {
+          // If item size is 9 bytes or less, then it's an empty file, so ignore it
+          const itemState = fs.statSync(itemPath);
+          if(itemState.size <= 9) return;
+          const page = {
+            route: '',
+            component: itemPath.replace(path.join(ctx.pluginDir, 'adminUI'), '').replace(/\\/g, '/'),
+            updated: false,
+            name: '',
+            // relativePath: itemPath.replace(path.join(ctx.pluginDir, 'adminUI', ctx.pluginKey), ''),
+          };
+          page.name = ctx.helpers.slugify(ctx.pluginKey+page.component).replace(/-/g, '_');
+          const cache_updated_date = ctx.cache.get(`adminui_page_${page.component}_updated`);
+          const updated_date = itemState.mtime.getTime();
+          page.updated = (cache_updated_date !== updated_date);
+          if(page.updated) ctx.cache.set(`adminui_page_${page.component}_updated`, updated_date);
+          // Case 1: The page is an index.vue file
+          if (item === 'index.vue') {
+            page.route = parentRoute;
+          }
+          // Case 2: The page is a _slug.vue file
+          else if (item.startsWith('_')) {
+            page.route = path.join(parentRoute, ':' + item.slice(1, -4));
+          }
+          // Case 3: The page is a normal vue file
+          else {
+            page.route = path.join(parentRoute, item.slice(0, -4));
+          }
+          pages.push(page);
+        }
+      }
+    });
+  };
+
+  loadPages(ctx, pagesFolder, '/');
+  return pages;
+};
+
+const getAdminUIPublicPages = (ctx) => {
+  // The pages are loaded from the pages folder and it's subfolders, and the routes are generated from the folder structure
+  // Use a recursive function to load the pages
+  // Routes should follow the NuxtJS routes structure
+  // If there is a _slug.vue file, then the name `slug` should be a parameter in the route
+  // If there is an index.vue file, then the route should be the folder name
+  // If there is a _slug/index.vue file, then the name `slug` should be a parameter in the route and the route should be the folder name
+  // If there is a _slug/_id.vue file, then the name `slug` should be a parameter in the route and the name `id` should be a parameter in the route
+
+  // Loading the pages
+  const pagesFolder = path.join(ctx.pluginDir, 'adminUI', 'public_pages');
   const pages = [];
 
   // Loading the pages recursively
@@ -239,15 +435,28 @@ module.exports = async (ctx) => {
   // Retrieve the pages
   const adminUIPages = getAdminUIPages(ctx);
 
+  // Retrieve the public pages
+  const adminUIPublicPages = getAdminUIPublicPages(ctx);
+
+  // Retrieve the partials
+  const adminUIPartials = getAdminUIPartials(ctx);
+
+  // Cache last updates for components
+  const adminUIComponents = getAdminUIComponents(ctx, adminUIPages, adminUIPartials);
+
   // Generate the pages routes and dynamic routes
+  // Check if there are changes in the components
+  const pagesComponentsAreUpdated = (adminUIComponents.filter((component) => (component.importedByPages && component.updated)).length > 0);
+  const partialsComponentsAreUpdated = (adminUIComponents.filter((component) => (component.importedByPartials && component.updated)).length > 0);
+  const publicPagesComponentsAreUpdated = (adminUIComponents.filter((component) => (component.importedByPublicPages && component.updated)).length > 0);
   // Only if there are changes do compile
-  const recompilePages = ctx.cache.get('adminui_pages_compiled_error') || (adminUIPages.filter((page) => page.updated).length > 0);
+  const recompilePages = ctx.cache.get('adminui_pages_compiled_error') || (adminUIPages.filter((page) => page.updated).length > 0) || pagesComponentsAreUpdated;
   var compiledPages;
   if (recompilePages) {
     ctx.cache.set('adminui_pages_compiled_error', true); // So if the compilation fails, it will automatically gets flagged as an error
     ctx.helpers.log('Admin UI pages compilation started', 'info');
     // Compile the pages
-    compiledPages = await compilePagesVue(ctx, adminUIPages);
+    compiledPages = await compilePagesVue(ctx, adminUIPages, adminUIComponents);
     if(!compiledPages){
       ctx.helpers.log('Admin UI pages compilation failed', 'error');
       process.exit(1);
@@ -260,18 +469,36 @@ module.exports = async (ctx) => {
     compiledPages = ctx.cache.get('adminui_compiled_pages');
   }
 
-  // Retrieve the partials
-  const adminUIPartials = getAdminUIPartials(ctx);
+  // Generate the public pages routes and dynamic routes
+  // Only if there are changes do compile
+  const recompilePublicPages = ctx.cache.get('adminui_public_pages_compiled_error') || (adminUIPublicPages.filter((page) => page.updated).length > 0) || publicPagesComponentsAreUpdated;
+  var compiledPublicPages;
+  if (recompilePublicPages) {
+    ctx.cache.set('adminui_public_pages_compiled_error', true); // So if the compilation fails, it will automatically gets flagged as an error
+    ctx.helpers.log('Admin UI public pages compilation started', 'info');
+    // Compile the public pages
+    compiledPublicPages = await compilePublicPagesVue(ctx, adminUIPublicPages, adminUIComponents);
+    if(!compiledPublicPages){
+      ctx.helpers.log('Admin UI public pages compilation failed', 'error');
+      process.exit(1);
+    }
+    // Save the last updates
+    ctx.cache.set('adminui_compiled_public_pages', compiledPublicPages);
+    ctx.cache.set('adminui_public_pages_compiled_error', false);
+  } else {
+    // Load the last updates
+    compiledPublicPages = ctx.cache.get('adminui_compiled_public_pages');
+  }
 
   // Generate the partials routes and dynamic routes
   // Only if there are changes do compile
-  const recompilePartials = ctx.cache.get('adminui_partials_compiled_error') || (adminUIPartials.filter((page) => page.updated).length > 0);
+  const recompilePartials = ctx.cache.get('adminui_partials_compiled_error') || (adminUIPartials.filter((page) => page.updated).length > 0) || partialsComponentsAreUpdated;
   var compiledPartials;
   if (recompilePartials) {
     ctx.cache.set('adminui_partials_compiled_error', true); // So if the compilation fails, it will automatically gets flagged as an error
     ctx.helpers.log('Admin UI partials compilation started', 'info');
     // Compile the partials
-    compiledPartials = await compilePartialsVue(ctx, adminUIPartials);
+    compiledPartials = await compilePartialsVue(ctx, adminUIPartials, adminUIComponents);
     if(!compiledPartials){
       ctx.helpers.log('Admin UI partials compilation failed', 'error');
       process.exit(1);
@@ -289,8 +516,10 @@ module.exports = async (ctx) => {
     menus: adminUIMenus,
     store: adminUIStore,
     pages: adminUIPages,
+    publicPages: adminUIPublicPages,
     compiled: compiledPages,
     compiledPartials: compiledPartials,
+    compiledPublicPages: compiledPublicPages,
     scripts: adminUIScripts,
   };
 

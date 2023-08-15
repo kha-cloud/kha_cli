@@ -31,6 +31,8 @@ function getRoutes(ctx, isLastError) {
       newCode = newCode.replace(/@PA\//g, `/api/plugin_api/${ctx.pluginKey}/`);
       // Plugins VueJS links
       newCode = newCode.replace(/@PV\//g, `/p/${ctx.pluginKey}/`);
+      // Plugins VueJS public links
+      newCode = newCode.replace(/@PVP\//g, `/public/${ctx.pluginKey}/`);
       return newCode;
     };
   
@@ -83,6 +85,8 @@ function getControllers(ctx, isLastError) {
           newCode = newCode.replace(/@PA\//g, `/api/plugin_api/${ctx.pluginKey}/`);
           // Plugins VueJS links
           newCode = newCode.replace(/@PV\//g, `/p/${ctx.pluginKey}/`);
+          // Plugins VueJS public links
+          newCode = newCode.replace(/@PVP\//g, `/public/${ctx.pluginKey}/`);
           return newCode;
         };
 

@@ -86,6 +86,8 @@ async function uploadFile(file_path, ctx) {
     newCode = newCode.replace(/@PA\//g, `/api/plugin_api/${ctx.pluginKey}/`);
     // Plugins VueJS links
     newCode = newCode.replace(/@PV\//g, `/p/${ctx.pluginKey}/`);
+    // Plugins VueJS public links
+    newCode = newCode.replace(/@PVP\//g, `/public/${ctx.pluginKey}/`);
     return newCode;
   };
 

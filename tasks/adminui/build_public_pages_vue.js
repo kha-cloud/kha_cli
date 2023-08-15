@@ -44,6 +44,8 @@ function createBuildFolder(ctx, public_pages, uiComponents) {
     newCode = newCode.replace(/@PA\//g, `/api/plugin_api/${ctx.pluginKey}/`);
     // Plugins VueJS links
     newCode = newCode.replace(/@PV\//g, `/p/${ctx.pluginKey}/`);
+    // Plugins VueJS public links
+    newCode = newCode.replace(/@PVP\//g, `/public/${ctx.pluginKey}/`);
     // Components imports
     newCode = newCode.replace(/"@\//g, `"${buildFolder}/`);
     newCode = newCode.replace(/'@\//g, `'${buildFolder}/`);
@@ -159,6 +161,7 @@ function createBuildFolder(ctx, public_pages, uiComponents) {
   $nuxt.$store.dispatch('plugins/pluginLoadRequiredVuetifyComponents', { vuetifyComponentsToImport, key: '${ctx.pluginKey}' }).then(() => {
     
     // $nuxt.$store.dispatch('plugins/pluginLoadPublicPages', { key: '${ctx.pluginKey}' });
+    $nuxt.$store.dispatch('plugins/setPluginPublicPagesLoadStatus', '${ctx.pluginKey}');
 
   });
 

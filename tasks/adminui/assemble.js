@@ -29,7 +29,21 @@ const getAdminUIMenus = (ctx) => {
       };
     }
     var menuTo = menu.to.startsWith('/') ? menu.to : `/${menu.to}`;
-    menuTo = menuTo.startsWith('@PV/') ? menuTo.slice(4) : menuTo;
+    // menuTo = menuTo.startsWith('@PV/') ? menuTo.slice(4) : menuTo;
+    if(menuTo.startsWith('@PV/')){
+      menuTo = menuTo.slice(4);
+      return {
+        ...menu,
+        to: `/p/${ctx.pluginKey}${menuTo}`,
+      };
+    }
+    if(menuTo.startsWith('@PVP/')){
+      menuTo = menuTo.slice(5);
+      return {
+        ...menu,
+        to: `/public/${ctx.pluginKey}${menuTo}`,
+      };
+    }
     return {
       ...menu,
       to: `/p/${ctx.pluginKey}${menuTo}`,
@@ -45,7 +59,21 @@ const getAdminUIMenus = (ctx) => {
       };
     }
     var menuTo = menu.to.startsWith('/') ? menu.to : `/${menu.to}`;
-    menuTo = menuTo.startsWith('@PV/') ? menuTo.slice(4) : menuTo;
+    // menuTo = menuTo.startsWith('@PV/') ? menuTo.slice(4) : menuTo;
+    if(menuTo.startsWith('@PV/')){
+      menuTo = menuTo.slice(4);
+      return {
+        ...menu,
+        to: `/p/${ctx.pluginKey}${menuTo}`,
+      };
+    }
+    if(menuTo.startsWith('@PVP/')){
+      menuTo = menuTo.slice(5);
+      return {
+        ...menu,
+        to: `/public/${ctx.pluginKey}${menuTo}`,
+      };
+    }
     return {
       ...menu,
       to: `/p/${ctx.pluginKey}${menuTo}`,
@@ -402,6 +430,8 @@ const getAdminUIScripts = (ctx) => {
             newCode = newCode.replace(/@PA\//g, `/api/plugin_api/${ctx.pluginKey}/`);
             // Plugins VueJS links
             newCode = newCode.replace(/@PV\//g, `/p/${ctx.pluginKey}/`);
+            // Plugins VueJS public links
+            newCode = newCode.replace(/@PVP\//g, `/public/${ctx.pluginKey}/`);
             return newCode;
           };
           script = replaceInCode(script);

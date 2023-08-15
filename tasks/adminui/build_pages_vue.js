@@ -44,6 +44,8 @@ function createBuildFolder(ctx, pages, uiComponents) {
     newCode = newCode.replace(/@PA\//g, `/api/plugin_api/${ctx.pluginKey}/`);
     // Plugins VueJS links
     newCode = newCode.replace(/@PV\//g, `/p/${ctx.pluginKey}/`);
+    // Plugins VueJS public links
+    newCode = newCode.replace(/@PVP\//g, `/public/${ctx.pluginKey}/`);
     // Components imports
     newCode = newCode.replace(/"@\//g, `"${buildFolder}/`);
     newCode = newCode.replace(/'@\//g, `'${buildFolder}/`);

@@ -90,7 +90,12 @@ const getHooks = (ctx, isLastError) => {
 const getSettingsSchema = (ctx) => {
   const settingsSchemaFile = path.join(ctx.pluginDir, 'config', 'settings', 'schema.jsonc');
   const settingsSchemaContent = fs.readFileSync(settingsSchemaFile, 'utf8');
-  const settingsSchema = commentJson.parse(settingsSchemaContent);
+  const settingsSchema = commentJson.parse(settingsSchemaContent).map((setting) => {
+    return {
+      ...setting,
+      key: ctx.pluginKey + '.' + setting.key,
+    };
+  });
 
   return settingsSchema;
 };

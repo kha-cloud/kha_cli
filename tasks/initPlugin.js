@@ -110,6 +110,7 @@ module.exports = async (ctx) => {
   
     if (hasAdminUi.hasAdminUi) {
       // Folders
+      fs.mkdirSync(path.join(ctx.pluginDir, 'static'));
       fs.mkdirSync(path.join(ctx.pluginDir, 'adminUI'));
       fs.mkdirSync(path.join(ctx.pluginDir, 'adminUI', 'pages'));
       fs.writeFileSync(path.join(ctx.pluginDir, 'adminUI', 'pages', '.gitkeep'), '');

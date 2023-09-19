@@ -17,6 +17,10 @@ function createBuildFolder(ctx, public_pages, uiComponents) {
   const adminUIFolder = path.join(ctx.pluginDir, "adminUI");
   const buildFolder = path.join(ctx.pluginDir, ".cache", "build");
   const entryJsFile = path.join(buildFolder, "public_pages_entry.js");
+  const publicStartupScriptFile = path.join(ctx.pluginDir, "adminUI", "scripts", "public_startup.js");
+
+  // Get the public_startup code
+  const publicStartupScriptCode = fs.readFileSync(publicStartupScriptFile, "utf8");
 
   // Create the `dist` and `build` folders if it doesn't exist
   if (!fs.existsSync(path.join(ctx.pluginDir, ".cache", "dist"))) {
@@ -124,6 +128,16 @@ function createBuildFolder(ctx, public_pages, uiComponents) {
 
   // Get global cache value for calling components
   const cp_cache_key = $nuxt.$store.state.plugins.components_cache_key;
+
+  // Evaluating public_startup code from publicStartupScriptCode (in a scope without eval)
+  (function(){
+    try {
+      ${publicStartupScriptCode}
+    } catch (error) {
+      console.error("Error in public_startup code");
+      console.error(error);
+    }
+  })();
 
   // Creating components (public_pages)
   const Components = {};

@@ -77,10 +77,15 @@ module.exports = async (ctx) => {
 
   // Sending data to the server (Use /update_plugin_by_key/:key)
   ctx.helpers.log("Uploading plugin to the server...");
-  const response = await ctx.helpers.dataCaller("put", `/api/update_plugin_by_key/${ctx.pluginKey}`, {
+  var requestPayload = {
     ...data,
     ...ctx.pluginData,
-  });
+  };
+  if(ctx.pluginData.icon) {
+    const iconUrl = ctx.pluginData.icon;
+    requestPayload.iconUrl = `/api/plugins_static/${ctx.pluginKey}/`+((iconUrl[0] == "/") ? iconUrl.slice(1) : iconUrl);
+  }
+  const response = await ctx.helpers.dataCaller("put", `/api/update_plugin_by_key/${ctx.pluginKey}`, requestPayload);
   if (response.error) {
     ctx.helpers.log("Error uploading plugin to the server", "error");
     console.log(response.error);

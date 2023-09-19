@@ -125,7 +125,7 @@ module.exports = async (ctx) => {
 
       // Files
       fs.writeFileSync(path.join(ctx.pluginDir, 'adminUI', 'config.jsonc'), "{}");
-      fs.writeFileSync(path.join(ctx.pluginDir, 'adminUI', 'menus.jsonc'), "{}");
+      fs.writeFileSync(path.join(ctx.pluginDir, 'adminUI', 'menus.jsonc'), `{\n  "mainMenu": [\n  ],\n  "profileMenu": [\n  ],\n  "hideMainMenu": [\n  ]\n}`);
       fs.writeFileSync(path.join(ctx.pluginDir, 'adminUI', 'store.js'),
       `module.exports = {\n`+
       `  namespaced: true,\n`+

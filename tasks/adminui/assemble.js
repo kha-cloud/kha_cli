@@ -93,10 +93,11 @@ const getAdminUIComponents = (ctx, pages, partials) => {
   // const pageFile = path.join(ctx.pluginDir, 'adminUI', pages[0].component);
 
   // Extract the components imported by a component
-  const extractComponentDependencies = (componentPath, ignoreList) => {
-    // console.log("  > Extracting dependencies for component: ", componentPath);
+  const extractComponentDependencies = (componentPath, ignoreList, level = 0) => {
+    const tabs = Array(level).fill('  ').join('');
+    // console.log(tabs+"  > Extracting dependencies for component: ", componentPath);
     if(ignoreList && ignoreList.has(componentPath)){
-      // console.log("    - Ignoring component: ", componentPath);
+      // console.log(tabs+"    - Ignoring component: ", componentPath);
       return new Set();
     }
     const componentFile = path.join(ctx.pluginDir, 'adminUI', 'components', componentPath);
@@ -109,7 +110,7 @@ const getAdminUIComponents = (ctx, pages, partials) => {
     // console.log("    - Total dependencies matches: ", (componentContent.match(regex) || []).length);
     while ((match = regex.exec(componentContent)) !== null) {
       var dependency;
-      var dependencyImportStatement = match[0];
+      var dependencyImportStatement = match[0].replace(/['"]+/g, '').replace(/;+/g, '').trim(); // to replace all the quotes and semicolons and trim
       if(dependencyImportStatement.includes('@/')){
         dependency = dependencyImportStatement.split('@/components/')[1];
       } else {
@@ -119,7 +120,11 @@ const getAdminUIComponents = (ctx, pages, partials) => {
         dependency = path.relative(path.join(ctx.pluginDir, 'adminUI', 'components'), dependency);
       }
       dependencies.add(dependency);
-      const subDependencies = extractComponentDependencies(dependency, dependencies);
+      const subDependencies = extractComponentDependencies(
+        dependency,
+        dependencies,
+        level +1
+      );
       subDependencies.forEach((subDependency) => dependencies.add(subDependency));
     }
 
@@ -135,6 +140,7 @@ const getAdminUIComponents = (ctx, pages, partials) => {
 
     folderContent.forEach((item) => {
       const itemPath = path.join(folder, item);
+      // console.log("  - Item: ", itemPath);
 
       // Check if the item is a folder, and recurse if so
       if (fs.lstatSync(itemPath).isDirectory()) {
@@ -148,7 +154,7 @@ const getAdminUIComponents = (ctx, pages, partials) => {
         let match;
         // console.log("- Total imports matches: ", (content.match(regex) || []).length);
         while ((match = regex.exec(content)) !== null) {
-          const componentPath = match[2]+'.vue';
+          const componentPath = match[2].replace(/['"]+/g, '').replace(/;+/g, '').trim()+'.vue';
           imports.add(componentPath);
           const importDependencies = extractComponentDependencies(componentPath);
           importDependencies.forEach((importedComponent) => imports.add(importedComponent));

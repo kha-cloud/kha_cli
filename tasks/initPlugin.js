@@ -122,6 +122,8 @@ module.exports = async (ctx) => {
       fs.writeFileSync(path.join(ctx.pluginDir, 'adminUI', 'partials', '.gitkeep'), '');
       fs.mkdirSync(path.join(ctx.pluginDir, 'adminUI', 'scripts'));
       fs.writeFileSync(path.join(ctx.pluginDir, 'adminUI', 'scripts', '.gitkeep'), '');
+      fs.mkdirSync(path.join(ctx.pluginDir, 'adminUI', 'utils'));
+      fs.writeFileSync(path.join(ctx.pluginDir, 'adminUI', 'utils', '.gitkeep'), '');
 
       // Files
       fs.writeFileSync(path.join(ctx.pluginDir, 'adminUI', 'config.jsonc'), "{}");

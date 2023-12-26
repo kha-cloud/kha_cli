@@ -124,6 +124,9 @@ function getControllers(ctx, isLastError) {
 };
 
 module.exports = async (ctx) => {
+  // ctx: (rootDir, command, pluginDir, pluginData, pluginKey, khaConfig, cache, clientCache, thirdPartyCache, helpers)
+  // helpers: (sleep, cacheInit, getCache, setCache, createCacheObject, calculateChecksum, slugify, unSlugify, log, stringToHex, pathToLinuxFormat, incrementAlphabetCode)
+
   const isLastError = ctx.cache.get('api-assembling-error');
   ctx.cache.set('api-assembling-error', true); // If do not reach end of the function, it means there is an error
   const originalDirectory = process.cwd();
@@ -144,5 +147,6 @@ module.exports = async (ctx) => {
     routes,
     controllers,
     io,
+    middleware, // TODO: Add middlewares support
   };
 };

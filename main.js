@@ -4,9 +4,15 @@
 const fs = require('fs');
 const path = require('path');
 const commentJson = require('comment-json');
+
+const initPlugin = require('./tasks/initPlugin');
 const uploadPlugin = require('./tasks/upload');
 const listenForChanges = require('./tasks/listenForChanges');
-const initPlugin = require('./tasks/initPlugin');
+
+const initTheme = require('./tasks/themes/init');
+const uploadTheme = require('./tasks/themes/upload');
+const uploadStaticTheme = require('./tasks/themes/upload_static');
+
 const queryAi = require('./tasks/queryAi');
 const helpers = require('./helpers');
 
@@ -14,6 +20,7 @@ const helpers = require('./helpers');
 // INITIALIZATION
 const rootDir = __dirname;
 const command = process.argv[2];
+const commandArgs = process.argv.slice(3);
 const pluginDir = process.cwd();
 
 
@@ -50,6 +57,10 @@ function main() {
   console.log('    listen');
   console.log('    init');
   console.log('    ai');
+  console.log('    theme');
+  console.log('    theme init <THEME_NAME>');
+  console.log('    theme upload <THEME_NAME>');
+  console.log('    theme static-upload <THEME_NAME>');
   console.log();
   // console.log('rootDir = ', rootDir);
   // console.log('command = ', command);
@@ -86,6 +97,8 @@ async function run() {
     ...helpers,
     ...helpers.createContextHelpers(context),
   };
+  // ctx: (rootDir, command, pluginDir, pluginData, pluginKey, khaConfig, cache, clientCache, thirdPartyCache, helpers)
+  // helpers: (sleep, cacheInit, getCache, setCache, createCacheObject, calculateChecksum, slugify, unSlugify, log, stringToHex, pathToLinuxFormat, incrementAlphabetCode)
 
   // COMMANDS
   if (command === 'upload') {
@@ -94,6 +107,23 @@ async function run() {
     listenForChanges(context);
   }else if (command === 'ai') {
     queryAi(context);
+  } else if (command === 'theme') {
+    const themeCommand = commandArgs[0];
+    const themeName = commandArgs[1];
+    if (themeCommand === 'init') {
+      initTheme(context, themeName);
+    } else if (themeCommand === 'upload') {
+      uploadTheme(context, themeName);
+    } else if (themeCommand === 'static-upload') {
+      uploadStaticTheme(context, themeName);
+    } else {
+      console.log('Available commands:');
+      console.log('    init <THEME_NAME>');
+      console.log('    upload <THEME_NAME>');
+      console.log('    static-upload <THEME_NAME>');
+      console.log();
+    }
+
   }else {
     main();
   }

@@ -109,7 +109,9 @@ async function run() {
     queryAi(context);
   } else if (command === 'theme') {
     const themeCommand = commandArgs[0];
-    const themeName = commandArgs[1];
+    var themeName = commandArgs[1];
+    const currentThemes = fs.readdirSync(path.join(pluginDir, 'themes'));
+    if(!themeName && currentThemes.length === 1) themeName = currentThemes[0];
     if (themeCommand === 'init') {
       initTheme(context, themeName);
     } else if (themeCommand === 'upload') {
@@ -121,6 +123,11 @@ async function run() {
       console.log('    init <THEME_NAME>');
       console.log('    upload <THEME_NAME>');
       console.log('    static-upload <THEME_NAME>');
+      console.log();
+      console.log('Current themes:');
+      for (const theme of currentThemes) {
+        console.log('    ' + theme);
+      }
       console.log();
     }
 

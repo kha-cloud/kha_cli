@@ -58,7 +58,7 @@ Runs an AI task, It's based on OpenAI's GPT-3 API, Some tasks require GPT-3 16K 
 
 #### `khap theme`
 
-Shows the theme help
+Shows the theme commands list, and the available themes
 
 #### `khap theme init <THEME_NAME>`
 

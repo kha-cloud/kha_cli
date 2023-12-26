@@ -147,6 +147,6 @@ module.exports = async (ctx) => {
     routes,
     controllers,
     io,
-    middleware, // TODO: Add middlewares support
+    // middleware, // TODO: Add middlewares support
   };
 };

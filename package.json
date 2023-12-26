@@ -1,6 +1,6 @@
 {
   "name": "kha_plugins_cli",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "description": "KhaCloud Plugins CLI Tool for KhaCloud Plugins Development and Deployment",
   "main": "main.js",
   "scripts": {
@@ -8,6 +8,10 @@
   },
   "bin": {
     "khap": "./main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kha-cloud/kha_plugins_cli.git"
   },
   "author": "Khalil ben zineb",
   "license": "ISC",

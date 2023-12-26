@@ -13,11 +13,11 @@ Documentation for Plugins development can be found [here](https://docs.cyberocea
 ## Installation
 
 ```bash
-npm install -g kha_plugins_cli
+sudo npm install -g kha_plugins_cli
 ```
 
 > ** For windows users: **
-> Open a command prompt as administrator and run the following command:
+> Open a command prompt as administrator and run the following command before installation:
 > ```bach
 > Set-ExecutionPolicy RemoteSigned
 > ```
@@ -25,7 +25,7 @@ npm install -g kha_plugins_cli
 ## Update
   
 ```bash
-npm update -g kha_plugins_cli
+sudo npm update -g kha_plugins_cli
 ```
 
 # Usage

@@ -162,6 +162,7 @@ module.exports = async (ctx) => {
       // Files
       fs.writeFileSync(path.join(ctx.pluginDir, 'api', 'io.js'), `// Code directly here\n// Available variables ctx, socket, global_data, Store, ObjectId\n\n`);
       fs.writeFileSync(path.join(ctx.pluginDir, 'api', 'routes.js'), `module.exports = [\n];`);
+      fs.writeFileSync(path.join(ctx.pluginDir, 'api', 'hooks.js'), `module.exports = [\n];`);
     }
   }
 

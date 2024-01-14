@@ -19,6 +19,41 @@ function replaceInCode(code, ctx) {
   return newCode;
 }
 
+function getHooks(ctx, isLastError) {
+  // Hooks are defined in `api/hooks.js`, the file should be executed and the exported array returned to be saved
+  const hooksFile = path.join(ctx.pluginDir, 'api', 'hooks.js');
+  // Check if the file is updated (compare the last modified time from cache)
+  if (fs.existsSync(hooksFile)) {
+    const lastModified = ctx.cache.get('hooksFileLastModified');
+    const currentModified = fs.statSync(hooksFile).mtime.getTime();
+    if ((lastModified && lastModified === currentModified) && !isLastError) {
+      return ctx.cache.get('hooks-file');
+    } else {
+      ctx.cache.set('hooksFileLastModified', currentModified);
+    }
+    // return require(hooksFile);
+    // if this function will be called multiple times, it should require the file each time to get the latest version
+    // do not use `require` here, it will cache the file and not get the latest version
+    // instead, use `eval` to execute the file and return the exported array
+  
+    var hooksFileContent = fs.readFileSync(hooksFile, "utf8");
+    hooksFileContent = replaceInCode(hooksFileContent, ctx);
+    const hooks = eval(hooksFileContent);
+    for(var i = 0; i < hooks.length; i++) {
+      if(hooks[i].function) {
+        hooks[i].function = babel.transformSync(wrapFunctionInAsyncFunction(hooks[i].function), {
+          presets: ['@babel/preset-env'],
+        }).code;
+      }
+    }
+    ctx.cache.set('hooks-file', hooks);
+    return hooks;
+
+  }else {
+    return [];
+  }
+}
+
 function getRoutes(ctx, isLastError) {
   // Routes are defined in `api/routes.js`, the file should be executed and the exported array returned to be saved
   const routesFile = path.join(ctx.pluginDir, 'api', 'routes.js');
@@ -138,6 +173,7 @@ module.exports = async (ctx) => {
   const routes = getRoutes(ctx, isLastError);
   const controllers = getControllers(ctx, isLastError);
   const io = getIO(ctx, isLastError);
+  const hooks = getHooks(ctx, isLastError);
 
   process.chdir(originalDirectory);
 
@@ -147,6 +183,7 @@ module.exports = async (ctx) => {
     routes,
     controllers,
     io,
+    hooks,
     // middleware, // TODO: Add middlewares support
   };
 };

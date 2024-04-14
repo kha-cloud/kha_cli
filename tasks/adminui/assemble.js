@@ -19,64 +19,46 @@ const getAdminUIMenus = (ctx) => {
   if(!menus.mainMenu) menus.mainMenu = [];
   if(!menus.profileMenu) menus.profileMenu = [];
 
-  menus.mainMenu = menus.mainMenu.map(menu => {
-    if(!menu.to) return menu;
-    if(menu.to.startsWith('http')) return menu; // External link
-    if(menu.to.startsWith('@/')){ // Link to a page in the administration
-      return {
-        ...menu,
-        to: menu.to.slice(1),
-      };
+  // Replace the links with the correct paths
+  const replaceLinksWithCorrectPaths = (link) => {
+    if(!link) return link;
+    if(link.startsWith('http')) return link; // External link
+    if(link.startsWith('@/')){ // Link to a page in the administration
+      return link.slice(1); // Remove the @
     }
-    var menuTo = menu.to.startsWith('/') ? menu.to : `/${menu.to}`;
+    var menuTo = link.startsWith('/') ? link : `/${link}`;
     // menuTo = menuTo.startsWith('@PV/') ? menuTo.slice(4) : menuTo;
     if(menuTo.startsWith('@PV/')){
       menuTo = menuTo.slice(4);
-      return {
-        ...menu,
-        to: `/p/${ctx.pluginKey}${menuTo}`,
-      };
+      return `/p/${ctx.pluginKey}${menuTo}`;
     }
     if(menuTo.startsWith('@PVP/')){
       menuTo = menuTo.slice(5);
-      return {
-        ...menu,
-        to: `/public/${ctx.pluginKey}${menuTo}`,
-      };
+      return `/public/${ctx.pluginKey}${menuTo}`;
     }
-    return {
-      ...menu,
-      to: `/p/${ctx.pluginKey}${menuTo}`,
+    return `/p/${ctx.pluginKey}${menuTo}`;
+  };
+
+  menus.mainMenu = menus.mainMenu.map(_menu => {
+    var menu = {
+      ..._menu,
+      to: replaceLinksWithCorrectPaths(_menu.to),
     };
+    if(menu.subitems && menu.subitems.length > 0){
+      menu.subitems = menu.subitems.map(_subitem => {
+        var subitem = {
+          ..._subitem,
+          to: replaceLinksWithCorrectPaths(_subitem.to),
+        };
+        return subitem;
+      });
+    }
+    return menu;
   });
   menus.profileMenu = menus.profileMenu.map(menu => {
-    if(!menu.to) return menu;
-    if(menu.to.startsWith('http')) return menu; // External link
-    if(menu.to.startsWith('@/')){ // Link to a page in the administration
-      return {
-        ...menu,
-        to: menu.to.slice(1),
-      };
-    }
-    var menuTo = menu.to.startsWith('/') ? menu.to : `/${menu.to}`;
-    // menuTo = menuTo.startsWith('@PV/') ? menuTo.slice(4) : menuTo;
-    if(menuTo.startsWith('@PV/')){
-      menuTo = menuTo.slice(4);
-      return {
-        ...menu,
-        to: `/p/${ctx.pluginKey}${menuTo}`,
-      };
-    }
-    if(menuTo.startsWith('@PVP/')){
-      menuTo = menuTo.slice(5);
-      return {
-        ...menu,
-        to: `/public/${ctx.pluginKey}${menuTo}`,
-      };
-    }
     return {
       ...menu,
-      to: `/p/${ctx.pluginKey}${menuTo}`,
+      to: replaceLinksWithCorrectPaths(menu.to),
     };
   });
   return menus;

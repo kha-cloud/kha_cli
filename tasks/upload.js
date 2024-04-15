@@ -2,7 +2,7 @@ const adminui_assembler = require('./adminui/assemble');
 const api_assembler = require('./api/assemble');
 const config_assembler = require('./config/assemble');
 const mobile_assembler = require('./mobile/assemble');
-const web_assembler = require('./web/assemble');
+const web_uploader = require('./web/upload');
 const static_uploader = require('./static/upload');
 const locales_uploader = require('./locales/upload');
 const fs = require('fs');
@@ -36,13 +36,13 @@ module.exports = async (ctx) => {
     data.mobile = await mobile_assembler(ctx);
   }
 
-  // Assembling Web data
-  // const web_data = await web_assembler(ctx);
-  if (fs.existsSync(path.join(ctx.pluginDir, 'web'))) {
-    data.web = await web_assembler(ctx);
-  }
-
   ctx.helpers.log("Plugin data assembled successfully", "success");
+
+  // Assembling & Uploading web files
+  // const web_data = await web_uploader(ctx);
+  if (fs.existsSync(path.join(ctx.pluginDir, 'web'))) {
+    data.web = await web_uploader(ctx);
+  }
 
   // Uploading static files
   if (fs.existsSync(path.join(ctx.pluginDir, 'static'))) {

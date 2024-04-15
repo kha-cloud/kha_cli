@@ -166,6 +166,28 @@ module.exports = async (ctx) => {
     }
   }
 
+  // -------------------------------------------------------------------- web
+  if(!fs.existsSync(path.join(ctx.pluginDir, 'web'))){
+    // Ask if the plugin has a web
+    const hasWeb = await inquirer.prompt({
+      type: 'confirm',
+      name: 'hasWeb',
+      message: 'Does the plugin have a web implementation?'
+    });
+
+    if (hasWeb.hasWeb) {
+      // Folders
+      fs.mkdirSync(path.join(ctx.pluginDir, 'web'));
+      fs.mkdirSync(path.join(ctx.pluginDir, 'web', 'templates'));
+      fs.writeFileSync(path.join(ctx.pluginDir, 'web', 'templates', '.gitkeep'), '');
+      fs.mkdirSync(path.join(ctx.pluginDir, 'web', 'sections'));
+      fs.writeFileSync(path.join(ctx.pluginDir, 'web', 'sections', '.gitkeep'), '');
+
+      // Files
+      fs.writeFileSync(path.join(ctx.pluginDir, 'web', 'routes.js'), `module.exports = [\n];`);
+    }
+  }
+
   // -------------------------------------------------------------------- config
   if(!fs.existsSync(path.join(ctx.pluginDir, 'config'))){
     // Ask if the plugin has a config

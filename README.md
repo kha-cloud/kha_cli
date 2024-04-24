@@ -42,6 +42,10 @@ Before using Kha Plugins CLI, you need to set up your `kha-plugin-config.jsonc` 
 
 Uploads your work to the default website
 
+#### `khap routes`
+
+Shows the API and WEB routes endpoints
+
 #### `khap listen`
 
 Listens for changes in your work and uploads them to the website

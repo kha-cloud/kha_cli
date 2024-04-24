@@ -7,6 +7,7 @@ const commentJson = require('comment-json');
 
 const initPlugin = require('./tasks/initPlugin');
 const uploadPlugin = require('./tasks/upload');
+const listPluginRoutes = require('./tasks/listPluginRoutes');
 const listenForChanges = require('./tasks/listenForChanges');
 
 const initTheme = require('./tasks/themes/init');
@@ -103,6 +104,8 @@ async function run() {
   // COMMANDS
   if (command === 'upload') {
     uploadPlugin(context);
+  }else if (command === 'routes') {
+    listPluginRoutes(context);
   }else if (command === 'listen') {
     listenForChanges(context);
   }else if (command === 'ai') {

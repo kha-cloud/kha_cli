@@ -24,11 +24,24 @@ const command = process.argv[2];
 const commandArgs = process.argv.slice(3);
 const pluginDir = process.cwd();
 
+// Init fix
+if ((command === 'init') && (commandArgs[0] == 'fix')) {
+  initPlugin({
+      pluginDir,
+      helpers,
+    },
+    true // isFixInit = true
+  ).then(() => {
+    console.log('Plugin fix initialization finished');
+    process.exit(1);
+  });
+  process.exit(1);
+} 
 
 // LOADING
 var isInit = false;
 if(!fs.existsSync(path.join(pluginDir, 'plugin.jsonc'))) {
-  if (command === 'init') {
+  if ((command === 'init') && (commandArgs.length === 0)) {
     isInit = true;
     initPlugin({
       pluginDir,
@@ -36,7 +49,7 @@ if(!fs.existsSync(path.join(pluginDir, 'plugin.jsonc'))) {
     }).then(() => {
       process.exit(1);
     });
-  }else {
+  } else {
     console.error('Please run this command from the root of your project');
     console.error('    File not found: ', path.join(pluginDir, 'plugin.jsonc'));
     process.exit(1);
@@ -56,7 +69,8 @@ function main() {
   console.log('Available commands:');
   console.log('    upload');
   console.log('    listen');
-  console.log('    init');
+  console.log('    init <- (This command is only available project not initialized yet)');
+  console.log('    init fix');
   console.log('    ai');
   console.log('    theme');
   console.log('    theme init <THEME_NAME>');

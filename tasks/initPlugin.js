@@ -12,14 +12,14 @@ function snakeCase(str) {
           .replace(/[^a-zA-Z0-9_]/g, '');
 }
 
-module.exports = async (ctx) => {
+module.exports = async (ctx, isFixInit = false) => {
 
   // ===========================================================================================
   //                                        PLUGIN CREATION
   // ===========================================================================================
 
   // Ask for the plugin name
-  const pluginName = await inquirer.prompt({
+  const pluginName = isFixInit || await inquirer.prompt({
     type: 'input',
     name: 'pluginName',
     message: 'What is the name of the plugin?',
@@ -27,7 +27,7 @@ module.exports = async (ctx) => {
   });
 
   // Ask for the plugin key (suggesting the plugin name in snake_case)
-  const pluginKey = await inquirer.prompt({
+  const pluginKey = isFixInit || await inquirer.prompt({
     type: 'input',
     name: 'pluginKey',
     message: 'What is the key of the plugin?',
@@ -35,7 +35,7 @@ module.exports = async (ctx) => {
   });
 
   // Ask for the plugin description
-  const pluginDescription = await inquirer.prompt({
+  const pluginDescription = isFixInit || await inquirer.prompt({
     type: 'input',
     name: 'pluginDescription',
     message: 'What is the description of the plugin?',
@@ -43,7 +43,7 @@ module.exports = async (ctx) => {
   });
 
   // Create the `plugin.jsonc`
-  const pluginJsonc = {
+  const pluginJsonc = isFixInit || {
     engine_version: "2",
     pluginVersion: '0.0.1',
     name: pluginName.pluginName,
@@ -52,18 +52,20 @@ module.exports = async (ctx) => {
     icon: "",
     permissions: {},
   };
-  fs.writeFileSync(path.join(ctx.pluginDir, 'plugin.jsonc'), JSON.stringify(pluginJsonc, null, 2));
+  if(!isFixInit){
+    fs.writeFileSync(path.join(ctx.pluginDir, 'plugin.jsonc'), JSON.stringify(pluginJsonc, null, 2));
 
-  // Create the cache/dist folder
-  fs.mkdirSync(path.join(ctx.pluginDir, '.cache'));
-  fs.mkdirSync(path.join(ctx.pluginDir, '.cache', 'dist'));
+    // Create the cache/dist folder
+    fs.mkdirSync(path.join(ctx.pluginDir, '.cache'));
+    fs.mkdirSync(path.join(ctx.pluginDir, '.cache', 'dist'));
+  }
 
   // ===========================================================================================
   //                                        API DATA
   // ===========================================================================================
 
   // Ask for the App's url (Optional)
-  const appUrl = await inquirer.prompt({
+  const appUrl = isFixInit || await inquirer.prompt({
     type: 'input',
     name: 'appUrl',
     message: 'What is the url of the app (Optional)?',
@@ -71,7 +73,7 @@ module.exports = async (ctx) => {
   });
 
   // Ask for the App's token (Optional)
-  const appToken = await inquirer.prompt({
+  const appToken = isFixInit || await inquirer.prompt({
     type: 'input',
     name: 'appToken',
     message: 'What is the token of the app (Optional)?',
@@ -79,7 +81,7 @@ module.exports = async (ctx) => {
   });
 
   // Ask for the OpenAi's token (Optional)
-  const openAiToken = await inquirer.prompt({
+  const openAiToken = isFixInit || await inquirer.prompt({
     type: 'input',
     name: 'openAiToken',
     message: 'What is the token for OpenAi (Optional)?',
@@ -87,48 +89,57 @@ module.exports = async (ctx) => {
   });
 
   // Create the `kha-plugin-config.jsonc`
-  const khaPluginConfigJsonc = {
+  const khaPluginConfigJsonc = isFixInit || {
     url: appUrl.appUrl,
     token: appToken.appToken,
     openai_key: openAiToken.openAiToken,
   };
-  fs.writeFileSync(path.join(ctx.pluginDir, 'kha-plugin-config.jsonc'), JSON.stringify(khaPluginConfigJsonc, null, 2));
+  if(!isFixInit){
+    fs.writeFileSync(path.join(ctx.pluginDir, 'kha-plugin-config.jsonc'), JSON.stringify(khaPluginConfigJsonc, null, 2));
+  }
 
   // ===========================================================================================
   //                                        OPTIONAL PARTS
   // ===========================================================================================
-
+  const makeDir = (path) => {
+    if(fs.existsSync(path)) return;
+    fs.mkdirSync(path);
+  };
+  const makeFile = (path, content) => {
+    if(fs.existsSync(path)) return;
+    fs.writeFileSync(path, content);
+  };
 
   // -------------------------------------------------------------------- adminUI
-  if(!fs.existsSync(path.join(ctx.pluginDir, 'adminUI'))){
+  if(!fs.existsSync(path.join(ctx.pluginDir, 'adminUI')) || isFixInit){
     // Ask if the plugin has an admin UI
-    const hasAdminUi = await inquirer.prompt({
+    const hasAdminUi = isFixInit || await inquirer.prompt({
       type: 'confirm',
       name: 'hasAdminUi',
       message: 'Does the plugin have an admin UI?'
     });
   
-    if (hasAdminUi.hasAdminUi) {
+    if (isFixInit || hasAdminUi.hasAdminUi) {
       // Folders
-      fs.mkdirSync(path.join(ctx.pluginDir, 'static'));
-      fs.mkdirSync(path.join(ctx.pluginDir, 'adminUI'));
-      fs.mkdirSync(path.join(ctx.pluginDir, 'adminUI', 'pages'));
-      fs.writeFileSync(path.join(ctx.pluginDir, 'adminUI', 'pages', '.gitkeep'), '');
-      fs.mkdirSync(path.join(ctx.pluginDir, 'adminUI', 'public_pages'));
-      fs.writeFileSync(path.join(ctx.pluginDir, 'adminUI', 'public_pages', '.gitkeep'), '');
-      fs.mkdirSync(path.join(ctx.pluginDir, 'adminUI', 'components'));
-      fs.writeFileSync(path.join(ctx.pluginDir, 'adminUI', 'components', '.gitkeep'), '');
-      fs.mkdirSync(path.join(ctx.pluginDir, 'adminUI', 'partials'));
-      fs.writeFileSync(path.join(ctx.pluginDir, 'adminUI', 'partials', '.gitkeep'), '');
-      fs.mkdirSync(path.join(ctx.pluginDir, 'adminUI', 'scripts'));
-      fs.writeFileSync(path.join(ctx.pluginDir, 'adminUI', 'scripts', '.gitkeep'), '');
-      fs.mkdirSync(path.join(ctx.pluginDir, 'adminUI', 'utils'));
-      fs.writeFileSync(path.join(ctx.pluginDir, 'adminUI', 'utils', '.gitkeep'), '');
+      makeDir(path.join(ctx.pluginDir, 'static'));
+      makeDir(path.join(ctx.pluginDir, 'adminUI'));
+      makeDir(path.join(ctx.pluginDir, 'adminUI', 'pages'));
+      makeFile(path.join(ctx.pluginDir, 'adminUI', 'pages', '.gitkeep'), '');
+      makeDir(path.join(ctx.pluginDir, 'adminUI', 'public_pages'));
+      makeFile(path.join(ctx.pluginDir, 'adminUI', 'public_pages', '.gitkeep'), '');
+      makeDir(path.join(ctx.pluginDir, 'adminUI', 'components'));
+      makeFile(path.join(ctx.pluginDir, 'adminUI', 'components', '.gitkeep'), '');
+      makeDir(path.join(ctx.pluginDir, 'adminUI', 'partials'));
+      makeFile(path.join(ctx.pluginDir, 'adminUI', 'partials', '.gitkeep'), '');
+      makeDir(path.join(ctx.pluginDir, 'adminUI', 'scripts'));
+      makeFile(path.join(ctx.pluginDir, 'adminUI', 'scripts', '.gitkeep'), '');
+      makeDir(path.join(ctx.pluginDir, 'adminUI', 'utils'));
+      makeFile(path.join(ctx.pluginDir, 'adminUI', 'utils', '.gitkeep'), '');
 
       // Files
-      fs.writeFileSync(path.join(ctx.pluginDir, 'adminUI', 'config.jsonc'), "{}");
-      fs.writeFileSync(path.join(ctx.pluginDir, 'adminUI', 'menus.jsonc'), `{\n  "mainMenu": [\n  ],\n  "profileMenu": [\n  ],\n  "hideMainMenu": [\n  ]\n}`);
-      fs.writeFileSync(path.join(ctx.pluginDir, 'adminUI', 'store.js'),
+      makeFile(path.join(ctx.pluginDir, 'adminUI', 'config.jsonc'), "{}");
+      makeFile(path.join(ctx.pluginDir, 'adminUI', 'menus.jsonc'), `{\n  "mainMenu": [\n  ],\n  "profileMenu": [\n  ],\n  "hideMainMenu": [\n  ]\n}`);
+      makeFile(path.join(ctx.pluginDir, 'adminUI', 'store.js'),
       `module.exports = {\n`+
       `  namespaced: true,\n`+
       `  state: () => ({\n`+
@@ -145,72 +156,72 @@ module.exports = async (ctx) => {
   }
 
   // -------------------------------------------------------------------- api
-  if(!fs.existsSync(path.join(ctx.pluginDir, 'api'))){
+  if(!fs.existsSync(path.join(ctx.pluginDir, 'api')) || isFixInit){
     // Ask if the plugin has an api
-    const hasApi = await inquirer.prompt({
+    const hasApi = isFixInit || await inquirer.prompt({
       type: 'confirm',
       name: 'hasApi',
       message: 'Does the plugin have an api?'
     });
 
-    if (hasApi.hasApi) {
+    if (isFixInit || hasApi.hasApi) {
       // Folders
-      fs.mkdirSync(path.join(ctx.pluginDir, 'api'));
-      fs.mkdirSync(path.join(ctx.pluginDir, 'api', 'controllers'));
-      fs.writeFileSync(path.join(ctx.pluginDir, 'api', 'controllers', '.gitkeep'), '');
+      makeDir(path.join(ctx.pluginDir, 'api'));
+      makeDir(path.join(ctx.pluginDir, 'api', 'controllers'));
+      makeFile(path.join(ctx.pluginDir, 'api', 'controllers', '.gitkeep'), '');
 
       // Files
-      fs.writeFileSync(path.join(ctx.pluginDir, 'api', 'io.js'), `// Code directly here\n// Available variables ctx, socket, global_data, Store, ObjectId\n\n`);
-      fs.writeFileSync(path.join(ctx.pluginDir, 'api', 'routes.js'), `module.exports = [\n];`);
-      fs.writeFileSync(path.join(ctx.pluginDir, 'api', 'hooks.js'), `module.exports = [\n];`);
+      makeFile(path.join(ctx.pluginDir, 'api', 'io.js'), `// Code directly here\n// Available variables ctx, socket, global_data, Store, ObjectId\n\n`);
+      makeFile(path.join(ctx.pluginDir, 'api', 'routes.js'), `module.exports = [\n];`);
+      makeFile(path.join(ctx.pluginDir, 'api', 'hooks.js'), `module.exports = [\n];`);
     }
   }
 
   // -------------------------------------------------------------------- web
-  if(!fs.existsSync(path.join(ctx.pluginDir, 'web'))){
+  if(!fs.existsSync(path.join(ctx.pluginDir, 'web')) || isFixInit){
     // Ask if the plugin has a web
-    const hasWeb = await inquirer.prompt({
+    const hasWeb = isFixInit || await inquirer.prompt({
       type: 'confirm',
       name: 'hasWeb',
       message: 'Does the plugin have a web implementation?'
     });
 
-    if (hasWeb.hasWeb) {
+    if (isFixInit || hasWeb.hasWeb) {
       // Folders
-      fs.mkdirSync(path.join(ctx.pluginDir, 'web'));
-      fs.mkdirSync(path.join(ctx.pluginDir, 'web', 'templates'));
-      fs.writeFileSync(path.join(ctx.pluginDir, 'web', 'templates', '.gitkeep'), '');
-      fs.mkdirSync(path.join(ctx.pluginDir, 'web', 'sections'));
-      fs.writeFileSync(path.join(ctx.pluginDir, 'web', 'sections', '.gitkeep'), '');
+      makeDir(path.join(ctx.pluginDir, 'web'));
+      makeDir(path.join(ctx.pluginDir, 'web', 'templates'));
+      makeFile(path.join(ctx.pluginDir, 'web', 'templates', '.gitkeep'), '');
+      makeDir(path.join(ctx.pluginDir, 'web', 'sections'));
+      makeFile(path.join(ctx.pluginDir, 'web', 'sections', '.gitkeep'), '');
 
       // Files
-      fs.writeFileSync(path.join(ctx.pluginDir, 'web', 'routes.js'), `module.exports = [\n];`);
+      makeFile(path.join(ctx.pluginDir, 'web', 'routes.js'), `module.exports = [\n];`);
     }
   }
 
   // -------------------------------------------------------------------- config
-  if(!fs.existsSync(path.join(ctx.pluginDir, 'config'))){
+  if(!fs.existsSync(path.join(ctx.pluginDir, 'config')) || isFixInit){
     // Ask if the plugin has a config
-    const hasConfig = await inquirer.prompt({
+    const hasConfig = isFixInit || await inquirer.prompt({
       type: 'confirm',
       name: 'hasConfig',
       message: 'Does the plugin have a config?'
     });
 
-    if (hasConfig.hasConfig) {
+    if (isFixInit || hasConfig.hasConfig) {
       // Folders
-      fs.mkdirSync(path.join(ctx.pluginDir, 'config'));
-      fs.mkdirSync(path.join(ctx.pluginDir, 'config', 'database'));
-      fs.mkdirSync(path.join(ctx.pluginDir, 'config', 'database', 'hooks'));
-      fs.writeFileSync(path.join(ctx.pluginDir, 'config', 'database', 'hooks', '.gitkeep'), '');
-      fs.mkdirSync(path.join(ctx.pluginDir, 'config', 'database', 'models'));
-      fs.writeFileSync(path.join(ctx.pluginDir, 'config', 'database', 'models', '.gitkeep'), '');
-      fs.mkdirSync(path.join(ctx.pluginDir, 'config', 'settings'));
+      makeDir(path.join(ctx.pluginDir, 'config'));
+      makeDir(path.join(ctx.pluginDir, 'config', 'database'));
+      makeDir(path.join(ctx.pluginDir, 'config', 'database', 'hooks'));
+      makeFile(path.join(ctx.pluginDir, 'config', 'database', 'hooks', '.gitkeep'), '');
+      makeDir(path.join(ctx.pluginDir, 'config', 'database', 'models'));
+      makeFile(path.join(ctx.pluginDir, 'config', 'database', 'models', '.gitkeep'), '');
+      makeDir(path.join(ctx.pluginDir, 'config', 'settings'));
 
       // Files
-      fs.writeFileSync(path.join(ctx.pluginDir, 'config', 'database', 'seed.jsonc'), "[\n]");
-      fs.writeFileSync(path.join(ctx.pluginDir, 'config', 'settings', 'schema.jsonc'), "[\n]");
-      fs.writeFileSync(path.join(ctx.pluginDir, 'config', 'settings', 'data.jsonc'), "[\n]");
+      makeFile(path.join(ctx.pluginDir, 'config', 'database', 'seed.jsonc'), "[\n]");
+      makeFile(path.join(ctx.pluginDir, 'config', 'settings', 'schema.jsonc'), "[\n]");
+      makeFile(path.join(ctx.pluginDir, 'config', 'settings', 'data.jsonc'), "[\n]");
     }
   }
 

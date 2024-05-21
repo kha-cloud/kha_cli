@@ -161,6 +161,7 @@ function createBuildFolder(ctx, partials, uiComponents) {
   $nuxt.$store.dispatch('plugins/pluginLoadRequiredVuetifyComponents', { vuetifyComponentsToImport, key: '${ctx.pluginKey}' }).then(() => {
     
     // $nuxt.$store.dispatch('plugins/pluginLoaded', { key: '${ctx.pluginKey}' });
+    $nuxt.$store.commit("plugins/SET_PLUGIN_PARTIALS_LOADED", true);
 
   });
 

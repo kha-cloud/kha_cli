@@ -193,6 +193,7 @@ const getAdminUIComponents = (ctx, pages, partials) => {
           const cache_updated_date = ctx.cache.get(`adminui_component_${component.component}_updated`);
           const updated_date = itemState.mtime.getTime();
           component.updated = (cache_updated_date !== updated_date);
+            
           if(component.updated) ctx.cache.set(`adminui_component_${component.component}_updated`, updated_date);
           components.push(component);
         }
@@ -248,6 +249,39 @@ const getAdminUIPages = (ctx) => {
           const cache_updated_date = ctx.cache.get(`adminui_page_${page.component}_updated`);
           const updated_date = itemState.mtime.getTime();
           page.updated = (cache_updated_date !== updated_date);
+
+          // Check if the page's imported "js" "css" or "json" files are updated
+          console.log('Checking page: ', page.component);
+          const regexJs = /import\s+\w+\s+from\s+(["'])(.*?)(\/(.*?)\.js)(["'])/g;
+          const regexCss = /import\s+\w+\s+from\s+(["'])(.*?)(\/(.*?)\.css)(["'])/g;
+          const regexJson = /import\s+\w+\s+from\s+(["'])(.*?)(\/(.*?)\.json)(["'])/g;
+          const pcontent = fs.readFileSync(itemPath, 'utf-8');
+          const regexChecker = (regex, content, ext) => {
+            let match;
+            while ((match = regex.exec(content)) !== null) {
+              var rFile = match[0].replace(/['"]+/g, '').replace(/;+/g, '').trim().split(' ');
+              rFile = rFile[rFile.length-1];
+              var rFilePath;
+              if(rFile.startsWith('@/')) {
+                rFilePath = path.join(ctx.pluginDir, 'adminUI', rFile.slice(2));
+              } else {
+                rFilePath = path.join(path.dirname(itemPath), rFile);
+              }
+              if(!fs.existsSync(rFilePath)) continue;
+              const rFileState = fs.statSync(rFilePath);
+              const cache_updated_date = ctx.cache.get(`adminui_page_`+ext+`_${rFilePath}_updated`);
+              const updated_date = rFileState.mtime.getTime();
+              if(cache_updated_date !== updated_date){
+                ctx.cache.set(`adminui_page_`+ext+`_${rFilePath}_updated`, updated_date);
+                page.updated = true;
+              }
+            }
+          };
+          const uncommentedContent = pcontent.replace(/\/\/.*/g, '').replace(/\/\*.*\*\//g, '');
+          regexChecker(regexJs, uncommentedContent, 'js');
+          regexChecker(regexCss, uncommentedContent, 'css');
+          regexChecker(regexJson, uncommentedContent, 'json');
+          
           if(page.updated) ctx.cache.set(`adminui_page_${page.component}_updated`, updated_date);
           // Case 1: The page is an index.vue file
           if (item === 'index.vue') {

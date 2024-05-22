@@ -251,7 +251,7 @@ const getAdminUIPages = (ctx) => {
           page.updated = (cache_updated_date !== updated_date);
 
           // Check if the page's imported "js" "css" or "json" files are updated
-          console.log('Checking page: ', page.component);
+          // console.log('Checking page: ', page.component);
           const regexJs = /import\s+\w+\s+from\s+(["'])(.*?)(\/(.*?)\.js)(["'])/g;
           const regexCss = /import\s+\w+\s+from\s+(["'])(.*?)(\/(.*?)\.css)(["'])/g;
           const regexJson = /import\s+\w+\s+from\s+(["'])(.*?)(\/(.*?)\.json)(["'])/g;

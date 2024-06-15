@@ -13,12 +13,17 @@ async function verifyFileChecksumWithServer(file_path, ctx) {
   const local_file_checksum = await ctx.helpers.calculateChecksum(file_path);
   // ctx.helpers.log(`checksum: ${local_file_checksum}`, "info");
 
-  const linux_file_path = ctx.helpers.stringToHex( formatToRemotePath(file_path, ctx) );
+  try {
+    const linux_file_path = ctx.helpers.stringToHex( formatToRemotePath(file_path, ctx) );
 
-  const response = await ctx.helpers.dataCaller("get", `/api/plugin_verify_file_checksum/${ctx.pluginKey}/${linux_file_path}/${local_file_checksum}`);
+    const response = await ctx.helpers.dataCaller("get", `/api/plugin_verify_file_checksum/${ctx.pluginKey}/${linux_file_path}/${local_file_checksum}`);
 
-  if (response.changed) {
-    return true;
+    if (response.changed) {
+      return true;
+    }
+  } catch (error) {
+    console.error(error);
+    process.exit(1);
   }
   return false;
 }
@@ -110,10 +115,11 @@ async function uploadFile(file_path, ctx) {
     form.append('file', data);
   }
   
+  const uploadUrl = `/api/plugin_upload_file/${ctx.pluginKey}/${linux_file_path}/${fileChecksum}`;
   try {
     const result = await ctx.helpers.dataCaller(
       "post",
-      `/api/plugin_upload_file/${ctx.pluginKey}/${linux_file_path}/${fileChecksum}`,
+      uploadUrl,
       form,
       form.getHeaders(),
     );
@@ -123,6 +129,7 @@ async function uploadFile(file_path, ctx) {
     console.log(result);
     return false;
   } catch (error) {
+    console.log("uploadUrl", uploadUrl);
     console.error(error);
     return false;
   }

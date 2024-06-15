@@ -200,7 +200,7 @@ async function buildPlugin(ctx) {
     // Switch to the package directory
     process.chdir(packageDirectory);
 
-    const command = `node "${require.resolve('@vue/cli-service/bin/vue-cli-service.js')}" build --dest "${distFolder}" --target lib --name ${ctx.pluginKey} --filename ${ctx.pluginKey} ` + entryJsFile;
+    const command = `node "${require.resolve('@vue/cli-service/bin/vue-cli-service.js')}" build --dest "${distFolder}" --target lib --source-map --name ${ctx.pluginKey} --filename ${ctx.pluginKey} ` + entryJsFile;
     // const command = `npx vue-cli-service build --target lib --name ${ctx.pluginKey} --filename ${ctx.pluginKey} ` + entryJsFile;
 
     // console.log("command ++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
@@ -235,8 +235,11 @@ function readCompiledFiles(ctx) {
   const distFolder = path.join(ctx.pluginDir, ".cache", "dist");
   const jsFile = path.join(distFolder, `${ctx.pluginKey}.umd.min.js`);
   const cssFile = path.join(distFolder, `${ctx.pluginKey}.css`);
+  const mapFile = path.join(distFolder, `${ctx.pluginKey}.umd.min.js.map`);
 
   const jsContent = fs.readFileSync(jsFile, "utf8");
+  const mapContent = fs.readFileSync(mapFile, "utf8");
+  const mapDataUrl = '//# sourceMappingURL=data:application/json;charset=utf-8;base64,' + Buffer.from(mapContent).toString('base64');
   var cssContent = "";
   try {
     cssContent = fs.readFileSync(cssFile, "utf8");
@@ -244,8 +247,9 @@ function readCompiledFiles(ctx) {
   }
 
   return {
-    script: jsContent,
+    script: jsContent + "\n" + mapDataUrl,
     style: cssContent,
+    // map: mapContent,
   };
 }
 

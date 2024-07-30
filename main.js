@@ -73,6 +73,7 @@ function main() {
   console.log('    init fix');
   console.log('    ai');
   console.log('    theme');
+  console.log('    routes');
   console.log('    theme init <THEME_NAME>');
   console.log('    theme upload <THEME_NAME>');
   console.log('    theme static-upload <THEME_NAME>');

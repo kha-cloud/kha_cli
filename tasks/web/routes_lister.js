@@ -38,8 +38,13 @@ function showRoutes(ctx, isLastError) {
   
   if (!fs.existsSync(routesFile) || routes.length === 0) {
     console.log('No routes found');
-    return;
   }
+
+  helpers.log("Staic WEB Route:", "success");
+  helpers.log(`  /api/plugins_static/${ctx.pluginKey}/`, "info");
+  console.log('           '+ctx.khaConfig.url+`/api/plugins_static/${ctx.pluginKey}/`);
+  
+  return;
 };
 
 module.exports = showRoutes;

@@ -5,6 +5,7 @@ const downloadPlugin = require('./src/download');
 const uploadPlugin = require('./src/upload');
 const disable = require('./src/disable');
 const deletePlugin = require('./src/delete');
+const connectPlugin = require('./src/connect');
 
 const command = process.argv[2];
 const rootDir = process.cwd();
@@ -34,6 +35,13 @@ if (command === 'download') {
   const pluginKey = process.argv[3];
   if (pluginKey) {
     deletePlugin(pluginKey);
+  } else {
+    console.log('Please specify a plugin key');
+  }
+}  else if (command === 'connect') {
+  const pluginKey = process.argv[3];
+  if (pluginKey) {
+    connectPlugin(pluginKey);
   } else {
     console.log('Please specify a plugin key');
   }

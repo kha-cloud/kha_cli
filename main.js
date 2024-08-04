@@ -15,6 +15,7 @@ const uploadTheme = require('./tasks/themes/upload');
 const uploadStaticTheme = require('./tasks/themes/upload_static');
 
 const queryAi = require('./tasks/queryAi');
+const connectPlugin = require('./tasks/connectPlugin');
 const helpers = require('./helpers');
 
 
@@ -72,6 +73,7 @@ function main() {
   console.log('    init <- (This command is only available project not initialized yet)');
   console.log('    init fix');
   console.log('    ai');
+  console.log('    connect');
   console.log('    theme');
   console.log('    routes');
   console.log('    theme init <THEME_NAME>');
@@ -125,6 +127,8 @@ async function run() {
     listenForChanges(context);
   }else if (command === 'ai') {
     queryAi(context);
+  } else if (command === 'connect') {
+    connectPlugin(context);
   } else if (command === 'theme') {
     const themeCommand = commandArgs[0];
     var themeName = commandArgs[1];

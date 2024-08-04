@@ -62,6 +62,10 @@ Fixes the project initialization by adding the missing files or folders
 
 Runs an AI task, It's based on OpenAI's GPT-3 API, Some tasks require GPT-3 16K model, OpenAI key is required
 
+#### `khap connect`
+
+Connects the local project to CyberOcean's cloud account, for remote work/dev
+
 ### Plugin's theme commands
 
 #### `khap theme`

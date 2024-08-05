@@ -114,7 +114,7 @@ const handleGetAiDb = async (pluginDir) => {
 };
 
 const handleGetFilesTree = async (pluginDir) => {
-  const ignore = ['node_modules', '.git', '.env', '.gitignore', '.cache', 'package-lock.json', 'package.json', 'yarn.lock'];
+  const ignore = ['node_modules', '.git', '.env', '.gitignore', '.gitkeep', '.cache', 'package-lock.json', 'package.json', 'yarn.lock'];
 
   const walk = (dir) => {
     let results = [];
@@ -126,7 +126,7 @@ const handleGetFilesTree = async (pluginDir) => {
       if (stat && stat.isDirectory()) {
         results.push({ type: 'directory', name: file, children: walk(filePath) });
       } else {
-        results.push({ type: 'file', name: file });
+        results.push({ type: 'file', name: file, path: filePath.replace(rootDir, ""), });
       }
     });
     return results;

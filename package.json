@@ -1,6 +1,6 @@
 {
   "name": "kha_plugins_cli",
-  "version": "2.5.1",
+  "version": "2.6.0",
   "description": "KhaCloud Plugins CLI Tool for KhaCloud Plugins Development and Deployment",
   "main": "main.js",
   "scripts": {
@@ -26,12 +26,15 @@
     "checksum": "^1.0.0",
     "chokidar": "^3.5.3",
     "comment-json": "^4.2.3",
+    "fetch-blob": "^4.0.0",
     "form-data": "^4.0.0",
+    "formdata-node": "^6.0.3",
     "fs-extra": "^11.1.1",
     "inquirer": "^8.2.5",
     "openai": "^3.2.1",
     "peerjs-on-node": "^1.0.2",
     "postcss": "^8.4.21",
+    "simple-peerjs": "^1.0.1",
     "vue-template-compiler": "^2.7.14"
   },
   "devDependencies": {

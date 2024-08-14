@@ -124,7 +124,7 @@ const connectPlugin = async (ctx) => {
   var id = await peer.id;
   // peer.on('connect', (id) => {
     console.log(`Connected, ID: ${id}`);
-    console.log(`Link: https://admin-cyberocean-x.monocommerce.tn/p/ai_dev_assistant/dev-board/${id}`);
+    console.log(`Link: https://admin-cyberocean-x.monocommerce.tn/public/ai_dev_assistant/dev-board/${id}`);
 
     peer.on('connect', async (conn) => {
       console.log('Connection established');
@@ -232,7 +232,7 @@ const connectPlugin = async (ctx) => {
 
   peer.on('error', (err) => {
     console.error(`PeerJS error: ${err}`);
-    peer.destroy();
+    peer.close();
     setTimeout(() => {
       connectPlugin(ctx);
     }, 100);

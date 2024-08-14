@@ -20,7 +20,7 @@ function createBuildFolder(ctx, public_pages, uiComponents) {
   const publicStartupScriptFile = path.join(ctx.pluginDir, "adminUI", "scripts", "public_startup.js");
 
   // Get the public_startup code
-  const publicStartupScriptCode = fs.readFileSync(publicStartupScriptFile, "utf8");
+  const publicStartupScriptCode = fs.existsSync(publicStartupScriptFile) ? fs.readFileSync(publicStartupScriptFile, "utf8") : "";
 
   // Create the `dist` and `build` folders if it doesn't exist
   if (!fs.existsSync(path.join(ctx.pluginDir, ".cache", "dist"))) {

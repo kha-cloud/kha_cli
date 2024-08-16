@@ -1,13 +1,14 @@
 {
   "name": "kha_cli",
-  "version": "2.7.0",
+  "version": "2.7.1",
   "description": "KhaCloud CLI Tool for KhaCloud Development and Deployment and remote AI assisted development",
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "bin": {
-    "khap": "./main.js"
+    "khap": "./main.js",
+    "kha": "./main.js"
   },
   "repository": {
     "type": "git",

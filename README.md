@@ -1,19 +1,20 @@
-# Kha Plugins CLI
+# Kha CLI
 
-Kha Plugins CLI is a command-line tool for managing your work with multiple websites on KhaCloud based cloud services.
+Kha CLI is a command-line tool for remote AI assisted development and managing your work with multiple websites on KhaCloud based cloud services.
 Documentation for Plugins development can be found [here](https://docs.cyberocean.tn/) in the near future.
+The tool can be used with non KhaCloud projects for remote AI assisted development.
 
 ## Requirements
 
 - Node.js 12 or higher
 - NPM (comes with Node.js)
 - NPX
-- A KhaCloud based cloud service account
+- A KhaCloud based cloud service account (For plugins only)
 
 ## Installation
 
 ```bash
-sudo npm install -g kha_plugins_cli
+sudo npm install -g kha_cli
 ```
 
 > ** For windows users: **
@@ -25,7 +26,7 @@ sudo npm install -g kha_plugins_cli
 ## Update
   
 ```bash
-sudo npm update -g kha_plugins_cli
+sudo npm update -g kha_cli
 ```
 
 # Usage
@@ -35,6 +36,14 @@ sudo npm update -g kha_plugins_cli
 Before using Kha Plugins CLI, you need to set up your `kha-plugin-config.jsonc` file
 
 ## Commands
+
+### Remote Development
+
+#### `khap connect`
+
+Connects a local project for remote work/development
+> Can work on KhaCloud projects or any other type of projects
+> Create a CyberOcean cloud account for enhanced AI capabilities, persistent and more secure project management
 
 ### Plugin's commands
 
@@ -61,12 +70,6 @@ Fixes the project initialization by adding the missing files or folders
 #### `khap ai`
 
 Runs an AI task, It's based on OpenAI's GPT-3 API, Some tasks require GPT-3 16K model, OpenAI key is required
-
-#### `khap connect`
-
-Connects a local project for remote work/development
-> Can work on KhaCloud projects or any other type of projects
-> Create a CyberOcean cloud account for enhanced AI capabilities, persistent and more secure project management
 
 ### Plugin's theme commands
 

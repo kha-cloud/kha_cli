@@ -1,7 +1,7 @@
 {
-  "name": "kha_plugins_cli",
-  "version": "2.6.4",
-  "description": "KhaCloud Plugins CLI Tool for KhaCloud Plugins Development and Deployment",
+  "name": "kha_cli",
+  "version": "2.7.0",
+  "description": "KhaCloud CLI Tool for KhaCloud Development and Deployment and remote AI assisted development",
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/kha-cloud/kha_plugins_cli.git"
+    "url": "https://github.com/kha-cloud/kha_cli.git"
   },
   "author": "Khalil ben zineb",
   "license": "ISC",

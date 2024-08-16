@@ -31,7 +31,7 @@ sudo npm update -g kha_cli
 
 # Usage
 
-## Configuration
+## Configuration (For plugins only)
 
 Before using Kha Plugins CLI, you need to set up your `kha-plugin-config.jsonc` file
 
@@ -43,21 +43,10 @@ Before using Kha Plugins CLI, you need to set up your `kha-plugin-config.jsonc` 
 
 Connects a local project for remote work/development
 > Can work on KhaCloud projects or any other type of projects
+
 > Create a CyberOcean cloud account for enhanced AI capabilities, persistent and more secure project management
 
 ### Plugin's commands
-
-#### `khap upload`
-
-Uploads your work to the default website
-
-#### `khap routes`
-
-Shows the API and WEB routes endpoints
-
-#### `khap listen`
-
-Listens for changes in your work and uploads them to the website
 
 #### `khap init`
 
@@ -66,6 +55,18 @@ Initializes a new Kha Plugins project
 #### `khap init fix`
 
 Fixes the project initialization by adding the missing files or folders
+
+#### `khap upload`
+
+Uploads your work to the default website
+
+#### `khap listen`
+
+Listens for changes in your work and uploads them to the website
+
+#### `khap routes`
+
+Shows the API and WEB routes endpoints
 
 #### `khap ai`
 

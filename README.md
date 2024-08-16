@@ -1,8 +1,8 @@
 # Kha CLI
 
 Kha CLI is a command-line tool for remote AI assisted development and managing your work with multiple websites on KhaCloud based cloud services.
-Documentation for Plugins development can be found [here](https://docs.cyberocean.tn/) in the near future.
 The tool can be used with non KhaCloud projects for remote AI assisted development.
+> Documentation for Plugins development can be found [here](https://docs.cyberocean.tn/).
 
 ## Requirements
 

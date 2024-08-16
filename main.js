@@ -41,6 +41,7 @@ if ((command === 'init') && (commandArgs[0] == 'fix')) {
 
 // LOADING
 var isInit = false;
+var isConnect = false;
 if(!fs.existsSync(path.join(pluginDir, 'plugin.jsonc'))) {
   if ((command === 'init') && (commandArgs.length === 0)) {
     isInit = true;
@@ -56,14 +57,21 @@ if(!fs.existsSync(path.join(pluginDir, 'plugin.jsonc'))) {
     process.exit(1);
   }
 }
+if (command === 'connect') {
+  isConnect = true;
+  connectPlugin({
+    pluginDir,
+    helpers,
+  });
+}
 
-if(!fs.existsSync(path.join(pluginDir, 'kha-plugin-config.jsonc')) && !isInit) {
+if(!fs.existsSync(path.join(pluginDir, 'kha-plugin-config.jsonc')) && !isInit && !isConnect) {
   console.error('Please run this command from the root of your project');
   console.error('    File not found: ', path.join(pluginDir, 'kha-plugin-config.jsonc'));
   process.exit(1);
 }
 
-if(!isInit) run();
+if(!isInit && !isConnect) run();
 
 // MAIN
 function main() {
@@ -127,8 +135,8 @@ async function run() {
     listenForChanges(context);
   }else if (command === 'ai') {
     queryAi(context);
-  } else if (command === 'connect') {
-    connectPlugin(context);
+  // } else if (command === 'connect') {
+  //   connectPlugin(context);
   } else if (command === 'theme') {
     const themeCommand = commandArgs[0];
     var themeName = commandArgs[1];

@@ -64,7 +64,8 @@ Runs an AI task, It's based on OpenAI's GPT-3 API, Some tasks require GPT-3 16K 
 
 #### `khap connect`
 
-Connects the local project to CyberOcean's cloud account, for remote work/dev
+Connects a local project for remote work/development
+> Create a CyberOcean cloud account for enhanced AI capabilities, persistent and more secure project management
 
 ### Plugin's theme commands
 

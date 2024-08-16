@@ -21,6 +21,21 @@ function initOpenAI(ctx) {
   return openai;
 }
 
+async function noAuthDataCaller(method, url, data, headers = {}, _config = {}) {
+  const config = {
+    ..._config,
+    method,
+    url: url,
+    data,
+    headers: {
+      ...headers,
+      // _token: ctx.khaConfig.token,
+    },
+  };
+  const response = await axios(config);
+  return response.data;
+}
+
 async function chatGPT(prompt, options = {}) {
   const response = await openai.createChatCompletion({
     model: options.model || 'gpt-3.5-turbo',
@@ -263,6 +278,7 @@ module.exports = {
   stringToHex,
   pathToLinuxFormat,
   incrementAlphabetCode,
+  noAuthDataCaller,
 
   // ------------ OpenAI -----------
   initOpenAI,

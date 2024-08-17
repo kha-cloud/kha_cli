@@ -25,6 +25,17 @@ const command = process.argv[2];
 const commandArgs = process.argv.slice(3);
 const pluginDir = process.cwd();
 
+// Print Version
+if ((command == 'version') || (command == '--version') || (command == '-v')) {
+  // Read the package.json file
+  const packageJsonPath = path.resolve(__dirname, 'package.json');
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+
+  // Print the version
+  console.log(`Current version: ${packageJson.version}`);
+  process.exit(1);
+}
+
 // Init fix
 if ((command === 'init') && (commandArgs[0] == 'fix')) {
   initPlugin({

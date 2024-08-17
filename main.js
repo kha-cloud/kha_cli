@@ -51,7 +51,7 @@ if(!fs.existsSync(path.join(pluginDir, 'plugin.jsonc'))) {
     }).then(() => {
       process.exit(1);
     });
-  } else {
+  } else if (command != 'connect') {
     console.error('Please run this command from the root of your project');
     console.error('    File not found: ', path.join(pluginDir, 'plugin.jsonc'));
     process.exit(1);

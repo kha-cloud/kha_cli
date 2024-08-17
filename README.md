@@ -6,9 +6,11 @@ The tool can be used with non KhaCloud projects for remote AI assisted developme
 
 ## Requirements
 
+- Linux (Not tested on Windows and Mac)
 - Node.js 12 or higher
 - NPM (comes with Node.js)
 - NPX
+- node-pre-gyp ( Install using `sudo npm install -g node-pre-gyp`)
 - A KhaCloud based cloud service account (For plugins only)
 
 ## Installation

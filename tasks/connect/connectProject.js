@@ -1,23 +1,94 @@
 const path = require('path');
 const fs = require('fs');
-// const wrtc = require('wrtc');
-// const { Peer } = require('peerjs');
-// const { Peer } = require('peerjs-on-node');
 const rootDir = process.cwd();
 const wrtc = require('wrtc');
 const fetch = require('node-fetch');
 const WebSocket = require('ws');
 const SimplePeerJs = require('simple-peerjs');
+const commentJson = require('comment-json');
+const { exec } = require('child_process');
 
 var initFirstRun = false;
 var cache = null;
+var projectConfig = {
+  actions: [],
+};
+const KhaCliVersion = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../package.json'), 'utf8')).version;
 
-const initConnection = async (ctx) => {
+var commandsRunCache = {};
+
+const runCommand = async (command, location) => {
+  const cacheKey = `${location}:${command}`;
+
+  // Check if command is already running for the given location
+  if (commandsRunCache[cacheKey]) {
+    return {
+      type: "ignored",
+      reason: "already-running",
+    };
+  }
+
+  // Flag this command as running
+  commandsRunCache[cacheKey] = true;
+
+  try {
+    const startTime = Date.now();
+    
+    await new Promise((resolve, reject) => {
+      exec(command, { cwd: location }, (error, stdout, stderr) => {
+        if (error) {
+          return reject(error);
+        }
+        if (stderr) {
+          console.error(`stderr: ${stderr}`);
+        }
+        console.log(`stdout: ${stdout}`);
+        resolve();
+      });
+    });
+
+    const endTime = Date.now();
+
+    // Command finished successfully
+    return {
+      type: "finished",
+      time: endTime - startTime,
+    };
+  } catch (error) {
+    // Handle errors (e.g., timeout)
+    return {
+      type: "error",
+      reason: error.message.includes("timeout") ? "timeout" : "crash",
+    };
+  } finally {
+    // Cleanup and allow the command to run again in the future
+    delete commandsRunCache[cacheKey];
+  }
+  
+  // Return state DOC
+  // return {
+  //   type: "finished", // Could be: finished, error, ignored
+  //   reason: "timeout" (In case of error) // Could be: timeout, crash, already-running
+  //   time: 500, // Time used to run the command
+  // };
+};
+// Init connection & First Run
+const initConnectionAndFirstRun = async (ctx) => {
   const { pluginDir } = ctx;
 
   if(!initFirstRun) {
+    // Project config
+    const projectConfigPath = path.join(pluginDir, 'kha-connect.jsonc');
+    if(fs.existsSync(projectConfigPath)) {
+      projectConfig = commentJson.parse(fs.readFileSync(projectConfigPath, 'utf8'));
+    }
+    projectConfig.version = KhaCliVersion;
+    projectConfig.name = projectConfig.name || pluginDir.replace(/\\/g, '/').replace(/\/$/, '').split('/').reverse()[0];
+    
+    // Cache init
     cache = ctx.helpers.createCacheObject("kha_connect", pluginDir);
 
+    // Remote project init
     if(!cache.get("localProject")) {
       ctx.helpers.log("Creating a remote project ...", "info");
       const res = await ctx.helpers.noAuthDataCaller(
@@ -47,8 +118,10 @@ const updateProjectPeerId = async (ctx, peerId) => {
 };
 
 const connectPlugin = async (ctx) => {
-  await initConnection(ctx);
+  await initConnectionAndFirstRun(ctx);
   const { pluginDir } = ctx;
+
+  var allConnectedPeers = {};
   
   const peer = new SimplePeerJs({
     // secure: true,
@@ -66,10 +139,18 @@ const connectPlugin = async (ctx) => {
   console.log(`Link: https://admin-cyberocean-x.monocommerce.tn/public/ai_dev_assistant/dev-board/${cache.get("localProject").id}`);
 
   peer.on('connect', async (conn) => {
-    console.log('Connection established');
+    console.log('Connection established from: ' + conn.peerId);
+    allConnectedPeers[conn.peerId] = conn;
     // console.log(conn);
     const conn_peer_send = (objData) => {
       conn.peer.send(JSON.stringify(objData));
+    };
+    const all_peers_send = (objData) => {
+      for (let i = 0; i < Object.keys(allConnectedPeers).length; i++) {
+        const p_conn_key = Object.keys(allConnectedPeers)[i];
+        const p_conn = allConnectedPeers[p_conn_key];
+        p_conn.peer.send(JSON.stringify(objData));
+      }
     };
     conn.peer.on('data', async (_data) => {
       const dataString = _data.toString("utf8");
@@ -85,66 +166,95 @@ const connectPlugin = async (ctx) => {
       try {
         // console.log(`Received data: ${JSON.stringify(data)}`);
         switch (data.type) {
+          case 'project-config':
+            // Handle project-config request
+            conn_peer_send({ type: data.type+"-response", data: projectConfig });
+            break;
+
           case 'get-ai-db':
             // Handle get-ai-db request
             const aiDbData = await handleGetAiDb(pluginDir);
-            conn_peer_send({ type: 'ai-db-data', data: aiDbData });
+            conn_peer_send({ type: data.type+"-response", data: aiDbData });
             break;
 
           case 'get-files-tree':
             // Handle get-files-tree request
             const filesTree = await handleGetFilesTree(pluginDir);
-            conn_peer_send({ type: 'files-tree', data: filesTree });
+            conn_peer_send({ type: data.type+"-response", data: filesTree });
             break;
 
           case 'read-file-content':
             // Handle read-file-content request
             try {
               const fileContent = await handleReadFileContent(pluginDir, data.filePath);
-              conn_peer_send({ type: 'file-content', data: fileContent });
+              conn_peer_send({ type: data.type+"-response", data: fileContent });
               } catch (error) {
-              conn_peer_send({ type: 'file-content', data: null, error: 404, errorMessage: "File Not Found" });
+              conn_peer_send({ type: data.type+"-response", data: null, error: 404, errorMessage: "File Not Found" });
             }
             break;
 
           case 'write-file-content':
             // Handle write-file-content request
             const writeStatus = await handleWriteFileContent(pluginDir, data.filePath, data.content);
-            conn_peer_send({ type: 'file-content-is-written', data: writeStatus });
+            conn_peer_send({ type: data.type+"-response", data: writeStatus });
             break;
 
           case 'remove-file':
             // Handle remove-file request
             const removeFileStatus = await handleRemoveFile(pluginDir, data.filePath);
-            conn_peer_send({ type: 'file-is-removed', data: removeFileStatus });
+            conn_peer_send({ type: data.type+"-response", data: removeFileStatus });
             break;
 
           case 'make-dir':
             // Handle make-dir request
             const makeDirStatus = await handleMakeDir(pluginDir, data.dirPath);
-            conn_peer_send({ type: 'dir-is-made', data: makeDirStatus });
+            conn_peer_send({ type: data.type+"-response", data: makeDirStatus });
             break;
 
           case 'remove-dir':
             // Handle remove-dir request
             const removeDirStatus = await handleRemoveDir(pluginDir, data.dirPath);
-            conn_peer_send({ type: 'dir-is-removed', data: removeDirStatus });
+            conn_peer_send({ type: data.type+"-response", data: removeDirStatus });
             break;
 
           case 'run-upload':
             // Handle run-upload request
             const runUploadStatus = await handleRunUpload(pluginDir);
-            conn_peer_send({ type: 'run-upload-finished', data: runUploadStatus });
+            conn_peer_send({ type: data.type+"-response", data: runUploadStatus });
             break;
 
           default:
-            console.log(`Unknown request type: ${data.type}`);
+            const selectedAction = projectConfig.actions.find(ac => ac.key == data.type);
+            if(selectedAction) {
+              all_peers_send({
+                type: "action-status-event",
+                data: "Running action [ " + selectedAction.label + " ] ...",
+              });
+              runCommand(selectedAction.command, pluginDir).then((state) => {
+                conn_peer_send({ type: data.type+"-response", data: {
+                  action: selectedAction,
+                  state: state,
+                } });
+                all_peers_send({
+                  type: "action-status-event",
+                  data: "",
+                });
+              });
+            } else {
+              console.log(`Unknown request type: ${data.type}`);
+            }
             break;
         }
       } catch (error) {
         console.error(`Error: ${error}`);
         // conn_peer_send({ type: 'error', data: error });
       }
+    });
+    conn.peer.on('close', async () => {
+      delete allConnectedPeers[conn.peerId];
+    });
+    conn.peer.on('error', async () => {
+      delete allConnectedPeers[conn.peerId];
     });
   });
   // });

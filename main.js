@@ -15,7 +15,8 @@ const uploadTheme = require('./tasks/themes/upload');
 const uploadStaticTheme = require('./tasks/themes/upload_static');
 
 const queryAi = require('./tasks/queryAi');
-const connectPlugin = require('./tasks/connectPlugin');
+const connectProject = require('./tasks/connect/connectProject');
+const connectCreateConfig = require('./tasks/connect/connectCreateConfig');
 const helpers = require('./helpers');
 
 
@@ -70,10 +71,21 @@ if(!fs.existsSync(path.join(pluginDir, 'plugin.jsonc'))) {
 }
 if (command === 'connect') {
   isConnect = true;
-  connectPlugin({
-    pluginDir,
-    helpers,
-  });
+  switch (commandArgs[0]) {
+    case "config":
+      connectCreateConfig({
+        pluginDir,
+        helpers,
+      });
+      break;
+  
+    default:
+      connectProject({
+        pluginDir,
+        helpers,
+      });
+      break;
+  }
 }
 
 if(!fs.existsSync(path.join(pluginDir, 'kha-plugin-config.jsonc')) && !isInit && !isConnect) {
@@ -147,7 +159,7 @@ async function run() {
   }else if (command === 'ai') {
     queryAi(context);
   // } else if (command === 'connect') {
-  //   connectPlugin(context);
+  //   connectProject(context);
   } else if (command === 'theme') {
     const themeCommand = commandArgs[0];
     var themeName = commandArgs[1];

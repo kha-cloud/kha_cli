@@ -48,6 +48,25 @@ Connects a local project for remote work/development
 
 > Create a CyberOcean cloud account for enhanced AI capabilities, persistent and more secure project management
 
+
+#### `khap connect config`
+
+Creates the config file `kha-connect.jsonc` to add action scripts, to run remotely from the dev envirement
+Example of a config file:
+```jsonc
+{
+  "actions": [
+    {
+      "enabled": true, // Should be set true or the action will be ignored
+      "key": "kha-upload", // Should be unique
+      "label": "Kha Upload", // The name shown on the button
+      "icon": "mdi-upload", // Accepts only MDI Icons
+      "command": "kha upload" // Command to execute EXP: "npm run build", "./my-bash-script.sh", ...
+    }
+  ]
+}
+```
+
 ### Plugin's commands
 
 #### `khap init`

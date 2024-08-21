@@ -102,12 +102,14 @@ module.exports = async (ctx, isFixInit = false) => {
   //                                        OPTIONAL PARTS
   // ===========================================================================================
   const makeDir = (path) => {
-    if(fs.existsSync(path)) return;
+    if(fs.existsSync(path)) return false;
     fs.mkdirSync(path);
+    return true;
   };
   const makeFile = (path, content) => {
-    if(fs.existsSync(path)) return;
+    if(fs.existsSync(path)) return false;
     fs.writeFileSync(path, content);
+    return true;
   };
 
   // -------------------------------------------------------------------- adminUI

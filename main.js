@@ -101,10 +101,11 @@ function main() {
   console.log('Available commands:');
   console.log('    upload');
   console.log('    listen');
-  console.log('    init <- (This command is only available project not initialized yet)');
+  console.log('    init <- (This command is only available when plugin is not initialized yet)');
   console.log('    init fix');
   console.log('    ai');
-  console.log('    connect');
+  console.log('    connect <- (This command is available for all types of projects)');
+  console.log('    connect config <- (This command is available for all types of projects)');
   console.log('    theme');
   console.log('    routes');
   console.log('    theme init <THEME_NAME>');

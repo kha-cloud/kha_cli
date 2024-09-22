@@ -41,7 +41,7 @@ Before using Kha Plugins CLI, you need to set up your `kha-plugin-config.jsonc` 
 
 ### Remote Development
 
-#### `khap connect`
+#### `kha connect`
 
 Connects a local project for remote work/development
 > Can work on KhaCloud projects or any other type of projects
@@ -49,7 +49,7 @@ Connects a local project for remote work/development
 > Create a CyberOcean cloud account for enhanced AI capabilities, persistent and more secure project management
 
 
-#### `khap connect config`
+#### `kha connect config`
 
 Creates the config file `kha-connect.jsonc` to add action scripts, to run remotely from the dev envirement
 Example of a config file:
@@ -69,44 +69,44 @@ Example of a config file:
 
 ### Plugin's commands
 
-#### `khap init`
+#### `kha init`
 
 Initializes a new Kha Plugins project
 
-#### `khap init fix`
+#### `kha init fix`
 
 Fixes the project initialization by adding the missing files or folders
 
-#### `khap upload`
+#### `kha upload`
 
 Uploads your work to the default website
 
-#### `khap listen`
+#### `kha listen`
 
 Listens for changes in your work and uploads them to the website
 
-#### `khap routes`
+#### `kha routes`
 
 Shows the API and WEB routes endpoints
 
-#### `khap ai`
+#### `kha ai`
 
 Runs an AI task, It's based on OpenAI's GPT-3 API, Some tasks require GPT-3 16K model, OpenAI key is required
 
 ### Plugin's theme commands
 
-#### `khap theme`
+#### `kha theme`
 
 Shows the theme commands list, and the available themes
 
-#### `khap theme init <THEME_NAME>`
+#### `kha theme init <THEME_NAME>`
 
 Initializes a new theme
 
-#### `khap theme upload <THEME_NAME>`
+#### `kha theme upload <THEME_NAME>`
 
 Uploads the all the theme files/settings to the website
 
-#### `khap theme static-upload <THEME_NAME>`
+#### `kha theme static-upload <THEME_NAME>`
 
 Uploads the theme static files to the website

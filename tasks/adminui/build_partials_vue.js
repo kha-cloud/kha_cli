@@ -260,7 +260,9 @@ function readCompiledFiles(ctx) {
   }
 
   return {
-    script: jsContent + "\n" + mapDataUrl,
+    //TODO: Change here to enable Map Data for debugging
+    script: jsContent,
+    // script: jsContent + "\n" + mapDataUrl,
     style: cssContent,
     // map: mapContent,
   };

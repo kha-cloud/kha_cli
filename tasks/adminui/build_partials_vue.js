@@ -162,6 +162,7 @@ function createBuildFolder(ctx, partials, uiComponents) {
     
     // $nuxt.$store.dispatch('plugins/pluginLoaded', { key: '${ctx.pluginKey}' });
     $nuxt.$store.commit("plugins/SET_PLUGIN_PARTIALS_LOADED", true);
+    $nuxt.$emit('plugins_partials_loaded', { message: 'plugins_partials_loaded' });
 
   });
 

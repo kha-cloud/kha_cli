@@ -93,7 +93,7 @@ const initConnectionAndFirstRun = async (ctx) => {
       ctx.helpers.log("Creating a remote project ...", "info");
       const res = await ctx.helpers.noAuthDataCaller(
         "get",
-        "https://admin-cyberocean-x.monocommerce.tn/api/plugin_api/ai_dev_assistant/generate_local_project"
+        "https://app.cyberocean.net/api/plugin_api/ai_dev_assistant/generate_local_project"
       );
       cache.set("localProject", res);
     }
@@ -108,7 +108,7 @@ const updateProjectPeerId = async (ctx, peerId) => {
   var localProject = cache.get("localProject");
   const res = await ctx.helpers.noAuthDataCaller(
     "post",
-    "https://admin-cyberocean-x.monocommerce.tn/api/plugin_api/ai_dev_assistant/update_local_project_peer_id/",
+    "https://app.cyberocean.net/api/plugin_api/ai_dev_assistant/update_local_project_peer_id/",
     {
       id: localProject.id,
       secretKey: localProject.secretKey,
@@ -136,7 +136,7 @@ const connectPlugin = async (ctx) => {
   await updateProjectPeerId(ctx, id);
   console.log(`Connected, Peer ID: ${id}`);
   console.log(`Local project ID: ${cache.get("localProject").id}`);
-  console.log(`Link: https://admin-cyberocean-x.monocommerce.tn/public/ai_dev_assistant/dev-board/${cache.get("localProject").id}`);
+  console.log(`Link: https://app.cyberocean.net/public/ai_dev_assistant/dev-board/${cache.get("localProject").id}`);
 
   peer.on('connect', async (conn) => {
     console.log('Connection established from: ' + conn.peerId);

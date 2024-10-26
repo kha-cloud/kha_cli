@@ -71,8 +71,8 @@ module.exports = async (ctx) => {
         process.exit(1);
       }
       ctx.helpers.log("Plugin created successfully", "success");
-      ctx.clientCache.set("plugin_exists", true);
     }
+    ctx.clientCache.set("plugin_exists", true);
   }
 
   // Sending data to the server (Use /update_plugin_by_key/:key)
@@ -89,6 +89,8 @@ module.exports = async (ctx) => {
   if (response.error) {
     ctx.helpers.log("Error uploading plugin to the server", "error");
     console.log(response.error);
+    ctx.clientCache.set("plugin_exists", false);
+    ctx.helpers.log("Try `kha upload` again, The local cache was updated to install the plugin next time", "info");
     process.exit(1);
   }
   ctx.helpers.log(`Plugin "${ctx.pluginKey}" uploaded successfully`, "success");

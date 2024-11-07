@@ -227,5 +227,25 @@ module.exports = async (ctx, isFixInit = false) => {
     }
   }
 
+  // -------------------------------------------------------------------- tasks
+  if(!fs.existsSync(path.join(ctx.pluginDir, 'tasks')) || isFixInit){
+    // Ask if the plugin has an tasks
+    const hasTasks = isFixInit || await inquirer.prompt({
+      type: 'confirm',
+      name: 'hasTasks',
+      message: 'Does the plugin have tasks?'
+    });
+
+    if (isFixInit || hasTasks.hasTasks) {
+      // Folders
+      makeDir(path.join(ctx.pluginDir, 'tasks'));
+      makeDir(path.join(ctx.pluginDir, 'tasks', 'task-example'));
+
+      // Files
+      makeFile(path.join(ctx.pluginDir, 'tasks', 'task-example', 'kha-task.jsonc'), `{\n  "timeout": 30000,\n  "chunks": [ // You can add as many chunks as you want (Order of chunks is important, the next chunk will exclude the paths in the previous chunks)\n    // { // Example of making a chunk for node_modules to make upload faster\n    //   "path": "./node_modules",\n    //   "name": "node_modules"\n    // },\n    {\n      "path": ".",\n      "name": "default"\n    }\n  ]\n}\n`);
+      makeFile(path.join(ctx.pluginDir, 'tasks', 'task-example', 'run.js'), `const run = async () => {\n\n  const cwd = process.cwd();\n  const taskData = await PETH.getTaskData();\n  // Example of getting data from an API, Check https://github.com/kha-cloud/plugins_engine_task_handler for documentation\n  // const testContent = await PETH.utils.$dataCaller("get", "@PA/testzz");\n\n  const sleep = (ms) => { return new Promise(resolve => setTimeout(resolve, ms)); };\n  \n  sleep(7000);\n  \n  await PETH.setTaskResult({\n    cwd,\n    taskData,\n    // testContent,\n  });\n}\n\nrun()\n;`);
+    }
+  }
+
 
 };

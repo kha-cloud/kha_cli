@@ -4,6 +4,7 @@ const config_assembler = require('./config/assemble');
 const mobile_assembler = require('./mobile/assemble');
 const web_uploader = require('./web/upload');
 const static_uploader = require('./static/upload');
+const pethtasks_uploader = require('./pethtasks/upload');
 const locales_uploader = require('./locales/upload');
 const fs = require('fs');
 const path = require('path');
@@ -47,6 +48,11 @@ module.exports = async (ctx) => {
   // Uploading static files
   if (fs.existsSync(path.join(ctx.pluginDir, 'static'))) {
     await static_uploader(ctx);
+  }
+
+  // Uploading pethtasks files
+  if (fs.existsSync(path.join(ctx.pluginDir, 'tasks'))) {
+    await pethtasks_uploader(ctx);
   }
 
   // Uploading locales

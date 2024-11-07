@@ -110,3 +110,7 @@ Uploads the all the theme files/settings to the website
 #### `kha theme static-upload <THEME_NAME>`
 
 Uploads the theme static files to the website
+
+### Plugin's tasks
+
+For more information about tasks, visit the documentation of **PETH** [plugins_engine_task_handler](https://github.com/kha-cloud/plugins_engine_task_handler) on Github

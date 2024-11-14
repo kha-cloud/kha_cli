@@ -12,14 +12,16 @@ function snakeCase(str) {
           .replace(/[^a-zA-Z0-9_]/g, '');
 }
 
-module.exports = async (ctx, isFixInit = false) => {
+module.exports = async (ctx, isFixInit = false, initCustomCommand) => {
 
   // ===========================================================================================
   //                                        PLUGIN CREATION
   // ===========================================================================================
 
+  const isCustomInit = isFixInit || initCustomCommand;
+
   // Ask for the plugin name
-  const pluginName = isFixInit || await inquirer.prompt({
+  const pluginName = isCustomInit || await inquirer.prompt({
     type: 'input',
     name: 'pluginName',
     message: 'What is the name of the plugin?',
@@ -27,7 +29,7 @@ module.exports = async (ctx, isFixInit = false) => {
   });
 
   // Ask for the plugin key (suggesting the plugin name in snake_case)
-  const pluginKey = isFixInit || await inquirer.prompt({
+  const pluginKey = isCustomInit || await inquirer.prompt({
     type: 'input',
     name: 'pluginKey',
     message: 'What is the key of the plugin?',
@@ -35,7 +37,7 @@ module.exports = async (ctx, isFixInit = false) => {
   });
 
   // Ask for the plugin description
-  const pluginDescription = isFixInit || await inquirer.prompt({
+  const pluginDescription = isCustomInit || await inquirer.prompt({
     type: 'input',
     name: 'pluginDescription',
     message: 'What is the description of the plugin?',
@@ -43,7 +45,7 @@ module.exports = async (ctx, isFixInit = false) => {
   });
 
   // Create the `plugin.jsonc`
-  const pluginJsonc = isFixInit || {
+  const pluginJsonc = isCustomInit || {
     engine_version: "2",
     pluginVersion: '0.0.1',
     name: pluginName.pluginName,
@@ -52,7 +54,7 @@ module.exports = async (ctx, isFixInit = false) => {
     icon: "",
     permissions: {},
   };
-  if(!isFixInit){
+  if(!isCustomInit){
     fs.writeFileSync(path.join(ctx.pluginDir, 'plugin.jsonc'), JSON.stringify(pluginJsonc, null, 2));
 
     // Create the cache/dist folder
@@ -65,7 +67,7 @@ module.exports = async (ctx, isFixInit = false) => {
   // ===========================================================================================
 
   // Ask for the App's url (Optional)
-  const appUrl = isFixInit || await inquirer.prompt({
+  const appUrl = isCustomInit || await inquirer.prompt({
     type: 'input',
     name: 'appUrl',
     message: 'What is the url of the app (Optional)?',
@@ -73,7 +75,7 @@ module.exports = async (ctx, isFixInit = false) => {
   });
 
   // Ask for the App's token (Optional)
-  const appToken = isFixInit || await inquirer.prompt({
+  const appToken = isCustomInit || await inquirer.prompt({
     type: 'input',
     name: 'appToken',
     message: 'What is the token of the app (Optional)?',
@@ -81,7 +83,7 @@ module.exports = async (ctx, isFixInit = false) => {
   });
 
   // Ask for the OpenAi's token (Optional)
-  const openAiToken = isFixInit || await inquirer.prompt({
+  const openAiToken = isCustomInit || await inquirer.prompt({
     type: 'input',
     name: 'openAiToken',
     message: 'What is the token for OpenAi (Optional)?',
@@ -89,12 +91,12 @@ module.exports = async (ctx, isFixInit = false) => {
   });
 
   // Create the `kha-plugin-config.jsonc`
-  const khaPluginConfigJsonc = isFixInit || {
+  const khaPluginConfigJsonc = isCustomInit || {
     url: appUrl.appUrl,
     token: appToken.appToken,
     openai_key: openAiToken.openAiToken,
   };
-  if(!isFixInit){
+  if(!isCustomInit){
     fs.writeFileSync(path.join(ctx.pluginDir, 'kha-plugin-config.jsonc'), JSON.stringify(khaPluginConfigJsonc, null, 2));
   }
 
@@ -111,17 +113,31 @@ module.exports = async (ctx, isFixInit = false) => {
     fs.writeFileSync(path, content);
     return true;
   };
+  const dirDoNotExist_or_isFixInit_or_isCustomInitCommand = (folderName) => {
+    if(initCustomCommand) {
+      return (initCustomCommand == folderName);
+    }
+    return !fs.existsSync(path.join(ctx.pluginDir, folderName)) || isFixInit;
+  };
+  const isFixInit_or_customCommand = (folderName, key) => {
+    if(isFixInit || (initCustomCommand == folderName)) {
+      return {
+        [key]: true
+      };
+    };
+    return false;
+  };
 
   // -------------------------------------------------------------------- adminUI
-  if(!fs.existsSync(path.join(ctx.pluginDir, 'adminUI')) || isFixInit){
+  if(dirDoNotExist_or_isFixInit_or_isCustomInitCommand('adminUI')){
     // Ask if the plugin has an admin UI
-    const hasAdminUi = isFixInit || await inquirer.prompt({
+    const hasAdminUi = isFixInit_or_customCommand("adminUI", "hasAdminUi") || await inquirer.prompt({
       type: 'confirm',
       name: 'hasAdminUi',
       message: 'Does the plugin have an admin UI?'
     });
   
-    if (isFixInit || hasAdminUi.hasAdminUi) {
+    if (isFixInit_or_customCommand("adminUI", "hasAdminUi") || hasAdminUi.hasAdminUi) {
       // Folders
       makeDir(path.join(ctx.pluginDir, 'static'));
       makeDir(path.join(ctx.pluginDir, 'adminUI'));
@@ -158,15 +174,15 @@ module.exports = async (ctx, isFixInit = false) => {
   }
 
   // -------------------------------------------------------------------- api
-  if(!fs.existsSync(path.join(ctx.pluginDir, 'api')) || isFixInit){
+  if(dirDoNotExist_or_isFixInit_or_isCustomInitCommand('api')){
     // Ask if the plugin has an api
-    const hasApi = isFixInit || await inquirer.prompt({
+    const hasApi = isFixInit_or_customCommand("api", "hasApi") || await inquirer.prompt({
       type: 'confirm',
       name: 'hasApi',
       message: 'Does the plugin have an api?'
     });
 
-    if (isFixInit || hasApi.hasApi) {
+    if (isFixInit_or_customCommand("api", "hasApi") || hasApi.hasApi) {
       // Folders
       makeDir(path.join(ctx.pluginDir, 'api'));
       makeDir(path.join(ctx.pluginDir, 'api', 'controllers'));
@@ -180,15 +196,15 @@ module.exports = async (ctx, isFixInit = false) => {
   }
 
   // -------------------------------------------------------------------- web
-  if(!fs.existsSync(path.join(ctx.pluginDir, 'web')) || isFixInit){
+  if(dirDoNotExist_or_isFixInit_or_isCustomInitCommand('web')){
     // Ask if the plugin has a web
-    const hasWeb = isFixInit || await inquirer.prompt({
+    const hasWeb = isFixInit_or_customCommand("web", "hasWeb") || await inquirer.prompt({
       type: 'confirm',
       name: 'hasWeb',
       message: 'Does the plugin have a web implementation?'
     });
 
-    if (isFixInit || hasWeb.hasWeb) {
+    if (isFixInit_or_customCommand("web", "hasWeb") || hasWeb.hasWeb) {
       // Folders
       makeDir(path.join(ctx.pluginDir, 'web'));
       makeDir(path.join(ctx.pluginDir, 'web', 'templates'));
@@ -202,15 +218,15 @@ module.exports = async (ctx, isFixInit = false) => {
   }
 
   // -------------------------------------------------------------------- config
-  if(!fs.existsSync(path.join(ctx.pluginDir, 'config')) || isFixInit){
+  if(dirDoNotExist_or_isFixInit_or_isCustomInitCommand('config')){
     // Ask if the plugin has a config
-    const hasConfig = isFixInit || await inquirer.prompt({
+    const hasConfig = isFixInit_or_customCommand("config", "hasConfig") || await inquirer.prompt({
       type: 'confirm',
       name: 'hasConfig',
       message: 'Does the plugin have a config?'
     });
 
-    if (isFixInit || hasConfig.hasConfig) {
+    if (isFixInit_or_customCommand("config", "hasConfig") || hasConfig.hasConfig) {
       // Folders
       makeDir(path.join(ctx.pluginDir, 'config'));
       makeDir(path.join(ctx.pluginDir, 'config', 'database'));
@@ -228,22 +244,23 @@ module.exports = async (ctx, isFixInit = false) => {
   }
 
   // -------------------------------------------------------------------- tasks
-  if(!fs.existsSync(path.join(ctx.pluginDir, 'tasks')) || isFixInit){
+  if(dirDoNotExist_or_isFixInit_or_isCustomInitCommand('tasks')){
     // Ask if the plugin has an tasks
-    const hasTasks = isFixInit || await inquirer.prompt({
+    const hasTasks = isFixInit_or_customCommand("tasks", "hasTasks") || await inquirer.prompt({
       type: 'confirm',
       name: 'hasTasks',
       message: 'Does the plugin have tasks?'
     });
 
-    if (isFixInit || hasTasks.hasTasks) {
+    if (isFixInit_or_customCommand("tasks", "hasTasks") || hasTasks.hasTasks) {
       // Folders
       makeDir(path.join(ctx.pluginDir, 'tasks'));
       makeDir(path.join(ctx.pluginDir, 'tasks', 'task-example'));
 
       // Files
-      makeFile(path.join(ctx.pluginDir, 'tasks', 'task-example', 'kha-task.jsonc'), `{\n  "timeout": 30000,\n  "chunks": [ // You can add as many chunks as you want (Order of chunks is important, the next chunk will exclude the paths in the previous chunks)\n    // { // Example of making a chunk for node_modules to make upload faster\n    //   "path": "./node_modules",\n    //   "name": "node_modules"\n    // },\n    {\n      "path": ".",\n      "name": "default"\n    }\n  ]\n}\n`);
-      makeFile(path.join(ctx.pluginDir, 'tasks', 'task-example', 'run.js'), `const run = async () => {\n\n  const cwd = process.cwd();\n  const taskData = await PETH.getTaskData();\n  // Example of getting data from an API, Check https://github.com/kha-cloud/plugins_engine_task_handler for documentation\n  // const testContent = await PETH.utils.$dataCaller("get", "@PA/testzz");\n\n  const sleep = (ms) => { return new Promise(resolve => setTimeout(resolve, ms)); };\n  \n  sleep(7000);\n  \n  await PETH.setTaskResult({\n    cwd,\n    taskData,\n    // testContent,\n  });\n}\n\nrun()\n;`);
+      makeFile(path.join(ctx.pluginDir, 'tasks', 'task-example', 'kha-task-test-data.jsonc'), `{\n  "msg": "Hello World!" // This is a test data\n}`);
+      makeFile(path.join(ctx.pluginDir, 'tasks', 'task-example', 'kha-task.example.jsonc'), `{\n  "timeout": 30000,\n  "chunks": [ // You can add as many chunks as you want (Order of chunks is important, the next chunk will exclude the paths in the previous chunks)\n    // { // Example of making a chunk for node_modules to make upload faster\n    //   "path": "./node_modules",\n    //   "name": "node_modules"\n    // },\n    {\n      "path": ".",\n      "name": "default"\n    }\n  ]\n}`);
+      makeFile(path.join(ctx.pluginDir, 'tasks', 'task-example', 'run.js'), `const PETH = require("kha_plugins_engine_task_handler");\n\nconst run = async () => {\n\n  const cwd = process.cwd();\n  const taskData = await PETH.getTaskData();\n  // Example of getting data from an API, Check https://github.com/kha-cloud/plugins_engine_task_handler for documentation\n  // const testContent = await PETH.utils.$dataCaller("get", "@PA/testzz");\n\n  const sleep = (ms) => { return new Promise(resolve => setTimeout(resolve, ms)); };\n  \n  sleep(7000);\n  \n  await PETH.setTaskResult({\n    cwd,\n    taskData,\n    // testContent,\n  });\n}\n\nrun();`);
     }
   }
 

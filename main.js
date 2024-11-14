@@ -9,6 +9,7 @@ const initPlugin = require('./tasks/initPlugin');
 const uploadPlugin = require('./tasks/upload');
 const listPluginRoutes = require('./tasks/listPluginRoutes');
 const listenForChanges = require('./tasks/listenForChanges');
+const pethTasksHandler = require('./tasks/pethTasksHandler');
 
 const initTheme = require('./tasks/themes/init');
 const uploadTheme = require('./tasks/themes/upload');
@@ -38,12 +39,13 @@ if ((command == 'version') || (command == '--version') || (command == '-v')) {
 }
 
 // Init fix
-if ((command === 'init') && (commandArgs[0] == 'fix')) {
+if ((command === 'init') && commandArgs[0]) {
   initPlugin({
       pluginDir,
       helpers,
     },
-    true // isFixInit = true
+    (commandArgs[0] == 'fix'), // isFixInit = true
+    commandArgs[0]
   ).then(() => {
     console.log('Plugin fix initialization finished');
     process.exit(1);
@@ -155,6 +157,8 @@ async function run() {
     uploadPlugin(context);
   }else if (command === 'routes') {
     listPluginRoutes(context);
+  }else if (command === 'task') {
+    pethTasksHandler(context);
   }else if (command === 'listen') {
     listenForChanges(context);
   }else if (command === 'ai') {

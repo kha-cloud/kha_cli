@@ -25,6 +25,8 @@ function getAllFiles(dir, withEditDate = false, files_) {
       getAllFiles(path.join(dir, file), withEditDate, files_);
     } else {
       // files_.push(path.join(dir, file));
+      if(file == "kha-task-test-data.jsonc") return;
+      if(file == "kha-task-test-result.jsonc") return;
       if (withEditDate) {
         files_[path.join(dir, file)] = fs.statSync(path.join(dir, file)).mtime.getTime();
       } else {
@@ -81,7 +83,7 @@ async function uploadFile(file_path, ctx) {
   }
 }
 
-async function getTasks(ctx, isLastError) {
+async function getTasks(ctx, isLastError, testMode) {
   const tasks = [];
   const stats = {
     updatedTasks: 0,
@@ -142,7 +144,10 @@ async function getTasks(ctx, isLastError) {
           name: chunk.name || "unnamed-"+index,
         };
       });
-      var tarArchivedPaths = [];
+      var tarArchivedPaths = [
+        "kha-task-test-data.jsonc",
+        "kha-task-test-result.jsonc",
+      ];
       // Task update status
       var taskUpdated = false;
 
@@ -151,7 +156,7 @@ async function getTasks(ctx, isLastError) {
         const chunk = taskChunks[i];
         // For each file in the chunk:
         const chunkFiles = getAllFiles(path.join(taskDir, chunk.path), true);
-        const cacheChunkFiles = ctx.cache.get(`chunkFiles-${taskKey}-${chunk.name}`) || {};
+        const cacheChunkFiles = (testMode ? ctx.cache.get(`chunkFiles-testMode-${taskKey}-${chunk.name}`) : ctx.cache.get(`chunkFiles-${taskKey}-${chunk.name}`)) || {};
 
         // Check if the files are up to date
         let chunkUpdated = isLastError;
@@ -176,21 +181,28 @@ async function getTasks(ctx, isLastError) {
           if (fs.existsSync(taskTarFile)) {
             fs.unlinkSync(taskTarFile);
           }
-          ctx.helpers.log(`Creating/Uploading ${taskTarFile.replace(currentTaskTarDir, "")}...`, "info");
+          ctx.helpers.log((testMode ? "Compiling" : "Creating/Uploading") + ` ${taskTarFile.replace(currentTaskTarDir, "")}...`, "info");
           // console.log(` fs.readdirSync(taskDir) Files: `, fs.readdirSync(taskDir));
           // console.log(` tarArchivedPaths Files: `, tarArchivedPaths.join(", "));
           // console.log(` Files: `, pathsToTar.join(", "));
           
           // await tar.create({ gzip: false, file: taskTarFile }, pathsToTar.map(file => path.join(taskDir, file)));
           await tar.create({ gzip: false, file: taskTarFile, cwd: taskDir }, pathsToTar);
-          ctx.cache.set(`chunkFiles-${taskKey}-${chunk.name}`, chunkFiles);
+          if(!testMode) {
+            ctx.cache.set(`chunkFiles-${taskKey}-${chunk.name}`, chunkFiles);
+          } else {
+            ctx.cache.set(`chunkFiles-testMode-${taskKey}-${chunk.name}`, chunkFiles);
+          }
 
           // Upload it
           // ctx.helpers.log(`Uploading ${taskTarFile.replace(currentTaskTarDir, "")}...`, "info");
-          const finalTarUrl = await uploadFile(taskTarFile, ctx);
-          if (!finalTarUrl) {
-            console.error("Error uploading the tar file");
-            return;
+          var finalTarUrl = taskChunks[i].url || "";
+          if(!testMode) {
+            finalTarUrl = await uploadFile(taskTarFile, ctx);
+            if (!finalTarUrl) {
+              console.error("Error uploading the tar file");
+              return;
+            }
           }
 
           stats.updateChunks++;
@@ -205,7 +217,7 @@ async function getTasks(ctx, isLastError) {
       }
 
       // Update task status on the server
-      if (taskUpdated) {
+      if (testMode && taskUpdated) {
         const taskCodeUpdateCacheKey = "plugins-engine-task-code-update-key-of-" + ctx.pluginKey + "-" + taskKey;
         const taskStatusUpdateUrl = `/api/peth/set_cache/${taskCodeUpdateCacheKey}`;
         const taskStatusUpdateResult = await ctx.helpers.dataCaller(
@@ -243,28 +255,34 @@ async function getTasks(ctx, isLastError) {
   }
 }
 
-module.exports = async (ctx) => {
+module.exports = async (ctx, testMode = false) => {
   // ctx: (rootDir, command, pluginDir, pluginData, pluginKey, khaConfig, cache, clientCache, thirdPartyCache, helpers)
   // helpers: (sleep, cacheInit, getCache, setCache, createCacheObject, calculateChecksum, slugify, unSlugify, log, stringToHex, pathToLinuxFormat, incrementAlphabetCode)
 
-  const isLastError = ctx.cache.get('pethtasks-uploading-error');
-  ctx.cache.set('pethtasks-uploading-error', true); // If do not reach end of the function, it means there is an error
+  const isLastError = testMode ? ctx.cache.get('pethtasks-testMode-uploading-error') : ctx.cache.get('pethtasks-uploading-error');
+  if (!testMode) {
+    ctx.cache.set('pethtasks-uploading-error', true); // If do not reach end of the function, it means there is an error
+  } else {
+    ctx.cache.set('pethtasks-testMode-uploading-error', true); // If do not reach end of the function, it means there is an error
+  }
   const originalDirectory = process.cwd();
   const packageDirectory = path.resolve(__dirname);
 
   // Switch to the package directory
   process.chdir(packageDirectory);
 
-  ctx.helpers.log("Uploading Tasks...");
+  ctx.helpers.log((testMode ? "Compiling" : "Uploading") + " Tasks...");
 
-  const { tasks, stats } = await getTasks(ctx, isLastError);
+  const { tasks, stats } = await getTasks(ctx, isLastError, testMode);
   // console.log("tasks +++++++++++++++++++");
   // console.log(JSON.stringify(tasks, null, 2));
-  const tasksUpdateUrl = `/api/peth/update_plugin_tasks_by_key/${ctx.pluginKey}`;
+  if (!testMode) {
+    const tasksUpdateUrl = `/api/peth/update_plugin_tasks_by_key/${ctx.pluginKey}`;
 
-  const tasksUpdateResponse = await ctx.helpers.dataCaller("post", `/api/peth/update_plugin_tasks_by_key/${ctx.pluginKey}`, {
-    pluginTasks: tasks
-  });
+    const tasksUpdateResponse = await ctx.helpers.dataCaller("post", `/api/peth/update_plugin_tasks_by_key/${ctx.pluginKey}`, {
+      pluginTasks: tasks
+    });
+  }
   // console.log(`++++++++++++++++++++++++++++++`);
   // console.log(`++++++++++++++++++++++++++++++`);
   // console.log(`++++++++++++++++++++++++++++++`);
@@ -274,12 +292,21 @@ module.exports = async (ctx) => {
 
   const uploadedTaskscount = tasks.filter(task => task.url).length;
 
-  ctx.helpers.log("Tasks uploaded successfully (" + stats.updateChunks + " chunks in " + stats.updatedTasks + " tasks)", "success");
+  ctx.helpers.log("Tasks " + (testMode ? "compiled" : "uploaded") + " successfully (" + stats.updateChunks + " chunks in " + stats.updatedTasks + " tasks)", "success");
 
   process.chdir(originalDirectory);
 
-  ctx.cache.set('pethtasks-uploading-error', false); // If reach end of the function, it means there is no error
+  if (!testMode) {
+    ctx.cache.set('pethtasks-uploading-error', false); // If reach end of the function, it means there is no error
+  } else {
+    ctx.cache.set('pethtasks-testMode-uploading-error', false); // If reach end of the function, it means there is no error
+  }
   
+  if (testMode) {
+    return {
+      tasks,
+    };
+  }
   return {
     // tasks,
   };

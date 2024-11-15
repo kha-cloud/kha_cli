@@ -40,9 +40,9 @@ function getAllFiles(dir, withEditDate = false, files_) {
 async function uploadFile(file_path, ctx) {
   // const linux_file_path = ctx.helpers.stringToHex( formatToRemotePath(file_path, ctx) );
   //TODO IMPORTANT The randomId should be enabled to prevent loading a cached tar file from the server and for security reasons, but to get enabled, a system to remove old files should be implemented
-  // const randomId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) + (new Date()).getTime().toString(36);
+  // const randomId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) + "--TIME--" + (new Date()).getTime().toString() + "__TIME__";
   const randomId = "RANDOM";
-  const _tarFileRemotePath = "/__PETH_TAR_FILES__/" + ctx.pluginKey + "_" + randomId + "_" + file_path.split('/').pop();
+  const _tarFileRemotePath = "/__PETH_TAR_FILES__/" + ctx.pluginKey + "_sSsS_" + randomId + "_sSsS_" + file_path.split('/').pop();
   const tarFileRemotePath = ctx.helpers.stringToHex(_tarFileRemotePath);
   const fileChecksum = await ctx.helpers.calculateChecksum(file_path);
   // https://{XXXXXX}/api/plugins_static/{XXXXXX}/__PETH_TAR_FILES__/{XXXXXX}.tar
@@ -217,7 +217,7 @@ async function getTasks(ctx, isLastError, testMode) {
       }
 
       // Update task status on the server
-      if (testMode && taskUpdated) {
+      if (!testMode && taskUpdated) {
         const taskCodeUpdateCacheKey = "plugins-engine-task-code-update-key-of-" + ctx.pluginKey + "-" + taskKey;
         const taskStatusUpdateUrl = `/api/peth/set_cache/${taskCodeUpdateCacheKey}`;
         const taskStatusUpdateResult = await ctx.helpers.dataCaller(
@@ -225,6 +225,8 @@ async function getTasks(ctx, isLastError, testMode) {
           taskStatusUpdateUrl,
           { value: (new Date()).getTime(), }
         );
+        // console.log("taskCodeUpdateCacheKey ++++++++++++++");
+        // console.log(taskCodeUpdateCacheKey);
         // console.log("taskStatusUpdateResult ++++++++++++++");
         // console.log(taskStatusUpdateResult);
         stats.updatedTasks++;

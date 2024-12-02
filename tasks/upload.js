@@ -13,27 +13,35 @@ module.exports = async (ctx) => {
   var data = {};
 
   ctx.helpers.log("Assembling plugin data...");
+  // ctx.helpers.log("ctx.commandParams");
+  // ctx.helpers.log(JSON.stringify(ctx.commandParams));
+
+  const isPermitted = (key) => {
+    const exists = fs.existsSync(path.join(ctx.pluginDir, key));
+    const isIgnored = ctx.commandParams['ignore'] && ctx.commandParams['ignore'].toLowerCase().includes(key.toLowerCase());
+    return exists && !isIgnored;
+  };
 
   // Assembling adminUI data
-  if (fs.existsSync(path.join(ctx.pluginDir, 'adminUI'))) {
+  if (isPermitted('adminUI')) {
     data.adminUi = await adminui_assembler(ctx);
   }
 
   // Assembling API data
   // const api_data = await api_assembler(ctx);
-  if (fs.existsSync(path.join(ctx.pluginDir, 'api'))) {
+  if (isPermitted('api')) {
     data.api = await api_assembler(ctx);
   }
 
   // Assembling Config data
   // const config_data = await config_assembler(ctx);
-  if (fs.existsSync(path.join(ctx.pluginDir, 'config'))) {
+  if (isPermitted('config')) {
     data.config = await config_assembler(ctx);
   }
 
   // Assembling Mobile data
   // const mobile_data = await mobile_assembler(ctx);
-  if (fs.existsSync(path.join(ctx.pluginDir, 'mobile'))) {
+  if (isPermitted('mobile')) {
     data.mobile = await mobile_assembler(ctx);
   }
 
@@ -41,22 +49,22 @@ module.exports = async (ctx) => {
 
   // Assembling & Uploading web files
   // const web_data = await web_uploader(ctx);
-  if (fs.existsSync(path.join(ctx.pluginDir, 'web'))) {
+  if (isPermitted('web')) {
     data.web = await web_uploader(ctx);
   }
 
   // Uploading static files
-  if (fs.existsSync(path.join(ctx.pluginDir, 'static'))) {
+  if (isPermitted('static')) {
     await static_uploader(ctx);
   }
 
   // Uploading pethtasks files
-  if (fs.existsSync(path.join(ctx.pluginDir, 'tasks'))) {
+  if (isPermitted('tasks')) {
     await pethtasks_uploader(ctx);
   }
 
   // Uploading locales
-  if (fs.existsSync(path.join(ctx.pluginDir, 'locales'))) {
+  if (isPermitted('locales')) {
     await locales_uploader(ctx);
   }
 

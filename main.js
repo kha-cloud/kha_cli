@@ -27,6 +27,16 @@ const command = process.argv[2];
 const commandArgs = process.argv.slice(3);
 const pluginDir = process.cwd();
 
+// All command params (a param starts with "--xx=data")
+const commandParams = {};
+for (let i = 0; i < commandArgs.length; i++) {
+  const arg = commandArgs[i];
+  if (arg.startsWith('--')) {
+    const [key, value] = arg.split('=');
+    commandParams[key.slice(2)] = value;
+  }
+}
+
 // Print Version
 if ((command == 'version') || (command == '--version') || (command == '-v')) {
   // Read the package.json file
@@ -102,6 +112,7 @@ if(!isInit && !isConnect) run();
 function main() {
   console.log('Available commands:');
   console.log('    upload');
+  console.log('    upload --ignore=tasks,adminui,... (Optional)');
   console.log('    listen');
   console.log('    init <- (This command is only available when plugin is not initialized yet)');
   console.log('    init fix');
@@ -136,6 +147,7 @@ async function run() {
   var context = {
     rootDir,
     command,
+    commandParams,
     pluginDir,
     pluginData,
     pluginKey,

@@ -80,6 +80,10 @@ Fixes the project initialization by adding the missing files or folders
 #### `kha upload`
 
 Uploads your work to the default website
+```bash
+# Upload with ignoring some tasks (Tasks names are not case sensitive)
+kha upload --ignore=tasks,adminui,...
+```
 
 #### `kha listen`
 
@@ -113,4 +117,33 @@ Uploads the theme static files to the website
 
 ### Plugin's tasks
 
-For more information about tasks, visit the documentation of **PETH** [plugins_engine_task_handler](https://github.com/kha-cloud/plugins_engine_task_handler) on Github
+- Init tasks in the plugin if it's not initialized yet
+```bash
+kha init tasks
+```
+
+- Copy the example task in the tasks folder
+
+- Rename the file `kha-task.example.jsonc` to `kha-task.jsonc`, and fill the options
+
+- Use the task from the API, by creating a task object
+```js
+// Example task to generate a video
+const generateVideoTask = await utils.createTask("generate-video");
+
+// Run the task and wait for the result, `true` is used to run the task as admin, if `false` the task will be run as the current user
+const taskResult = await generateVideoTask.runAndWait(data, true);
+
+// Run the task and don't wait for the result, and get task id, to retrieve the result later
+await generateVideoTask.run(data, true);
+const taskId = generateVideoTask.id; // Store the task id to use it later to retrieve the result and the state
+// After some time OR from another request
+const taskId = /* Retrieve the task id from where it's stored */;
+const generateVideoTask = await utils.getTaskById(taskId);
+const taskResult = await generateVideoTask.getResult();
+
+// To get task state and any given point in time
+const taskStatus = await myTask.getState(); // pending, finished, failed
+```
+
+For more information about tasks creation, visit the documentation of **PETH** [plugins_engine_task_handler](https://github.com/kha-cloud/plugins_engine_task_handler) on Github

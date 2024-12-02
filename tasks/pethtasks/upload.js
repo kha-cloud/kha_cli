@@ -37,7 +37,7 @@ function getAllFiles(dir, withEditDate = false, files_) {
   return files_;
 }
 
-async function uploadFile(file_path, ctx) {
+async function uploadFile(ctx, file_path, taskKey) {
   // const linux_file_path = ctx.helpers.stringToHex( formatToRemotePath(file_path, ctx) );
   //TODO IMPORTANT The randomId should be enabled to prevent loading a cached tar file from the server and for security reasons, but to get enabled, a system to remove old files should be implemented
   // const randomId = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) + "--TIME--" + (new Date()).getTime().toString() + "__TIME__";
@@ -45,6 +45,12 @@ async function uploadFile(file_path, ctx) {
   const _tarFileRemotePath = "/__PETH_TAR_FILES__/" + ctx.pluginKey + "_sSsS_" + randomId + "_sSsS_" + file_path.split('/').pop();
   const tarFileRemotePath = ctx.helpers.stringToHex(_tarFileRemotePath);
   const fileChecksum = await ctx.helpers.calculateChecksum(file_path);
+
+  const cachedChecksum = ctx.clientCache.get("peth_tasks_tar_files_of_" + ctx.pluginKey + "_of_" + taskKey + "_of_" + file_path);
+
+  if (cachedChecksum && cachedChecksum.checksum === fileChecksum) {
+    return cachedChecksum.url;
+  }
   // https://{XXXXXX}/api/plugins_static/{XXXXXX}/__PETH_TAR_FILES__/{XXXXXX}.tar
   const finalTarUrl = ctx.khaConfig.url + "/api/plugins_static/" + ctx.pluginKey + _tarFileRemotePath;
 
@@ -72,6 +78,10 @@ async function uploadFile(file_path, ctx) {
       form.getHeaders(),
     );
     if (result.success) {
+      ctx.clientCache.set("peth_tasks_tar_files_of_" + ctx.pluginKey + "_of_" + taskKey + "_of_" + file_path, {
+        checksum: fileChecksum,
+        url: finalTarUrl,
+      });
       return finalTarUrl;
     }
     console.log(result);
@@ -198,7 +208,7 @@ async function getTasks(ctx, isLastError, testMode) {
           // ctx.helpers.log(`Uploading ${taskTarFile.replace(currentTaskTarDir, "")}...`, "info");
           var finalTarUrl = taskChunks[i].url || "";
           if(!testMode) {
-            finalTarUrl = await uploadFile(taskTarFile, ctx);
+            finalTarUrl = await uploadFile(ctx, taskTarFile, taskKey);
             if (!finalTarUrl) {
               console.error("Error uploading the tar file");
               return;

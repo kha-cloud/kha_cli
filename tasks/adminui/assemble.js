@@ -216,7 +216,7 @@ const getAdminUIPages = (ctx) => {
 
   // Loading the pages
   const pagesFolder = path.join(ctx.pluginDir, 'adminUI', 'pages');
-  const pages = [];
+  var pages = [];
 
   // Loading the pages recursively
   const loadPages = (ctx, folder, parentRoute = '') => {
@@ -302,6 +302,12 @@ const getAdminUIPages = (ctx) => {
   };
 
   loadPages(ctx, pagesFolder, '/');
+
+  // Sort pages so the ones with page.route.includes(':') are last
+  pages.sort((a, b) => {
+    if (a.route.includes(':') && !b.route.includes(':')) return 1;
+  })
+  
   return pages;
 };
 

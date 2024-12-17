@@ -306,7 +306,9 @@ const getAdminUIPages = (ctx) => {
   // Sort pages so the ones with page.route.includes(':') are last
   pages.sort((a, b) => {
     if (a.route.includes(':') && !b.route.includes(':')) return 1;
-  })
+    if (!a.route.includes(':') && b.route.includes(':')) return -1;
+    return 0;
+  });
   
   return pages;
 };

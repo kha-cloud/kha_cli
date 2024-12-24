@@ -156,7 +156,7 @@ module.exports = async (ctx, isFixInit = false, initCustomCommand) => {
 
       // Files
       makeFile(path.join(ctx.pluginDir, 'adminUI', 'config.jsonc'), "{}");
-      makeFile(path.join(ctx.pluginDir, 'adminUI', 'menus.jsonc'), `{\n  "mainMenu": [\n  ],\n  "profileMenu": [\n  ],\n  "hideMainMenu": [\n  ]\n}`);
+      makeFile(path.join(ctx.pluginDir, 'adminUI', 'menus.jsonc'), `{\n  "mainMenu": [\n  ],\n  "profileMenu": [\n  ],\n  "hideMainMenu": [\n  ],\n  "hideProfileMenu": [\n  ]\n}`);
       makeFile(path.join(ctx.pluginDir, 'adminUI', 'store.js'),
       `module.exports = {\n`+
       `  namespaced: true,\n`+

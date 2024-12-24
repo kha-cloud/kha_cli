@@ -209,6 +209,7 @@ module.exports = async (ctx, isFixInit = false, initCustomCommand) => {
       makeDir(path.join(ctx.pluginDir, 'web'));
       makeDir(path.join(ctx.pluginDir, 'web', 'templates'));
       makeFile(path.join(ctx.pluginDir, 'web', 'templates', '.gitkeep'), '');
+      makeFile(path.join(ctx.pluginDir, 'web', 'templates', 'layout.liquid'), '{{ content_for_layout }}');
       makeDir(path.join(ctx.pluginDir, 'web', 'sections'));
       makeFile(path.join(ctx.pluginDir, 'web', 'sections', '.gitkeep'), '');
 

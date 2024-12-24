@@ -208,10 +208,12 @@ module.exports = async (ctx, isFixInit = false, initCustomCommand) => {
       // Folders
       makeDir(path.join(ctx.pluginDir, 'web'));
       makeDir(path.join(ctx.pluginDir, 'web', 'templates'));
-      makeFile(path.join(ctx.pluginDir, 'web', 'templates', '.gitkeep'), '');
-      makeFile(path.join(ctx.pluginDir, 'web', 'templates', 'layout.liquid'), '{{ content_for_layout }}');
+      // makeFile(path.join(ctx.pluginDir, 'web', 'templates', '.gitkeep'), '');
+      makeFile(path.join(ctx.pluginDir, 'web', 'templates', 'layout.liquid'), `\n<html>\n  <head>\n    <meta charset="utf-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>My Website</title>\n  </head>\n  <body>\n    {% section '@PK_header.liquid' %}\n    {{ content_for_layout }}\n    {% section '@PK_footer.liquid' %}\n  </body>\n</html>\n`);
       makeDir(path.join(ctx.pluginDir, 'web', 'sections'));
-      makeFile(path.join(ctx.pluginDir, 'web', 'sections', '.gitkeep'), '');
+      // makeFile(path.join(ctx.pluginDir, 'web', 'sections', '.gitkeep'), '');
+      makeFile(path.join(ctx.pluginDir, 'web', 'sections', 'header.liquid'), 'THIS IS THE HEADER');
+      makeFile(path.join(ctx.pluginDir, 'web', 'sections', 'footer.liquid'), 'THIS IS THE FOOTER');
 
       // Files
       makeFile(path.join(ctx.pluginDir, 'web', 'routes.js'), `module.exports = [\n];`);

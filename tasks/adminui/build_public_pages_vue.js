@@ -143,6 +143,13 @@ function createBuildFolder(ctx, public_pages, uiComponents) {
   const Components = {};
   ${public_pages.map((cp) => `Components["cpublic_page_"+cp_cache_key+"_${cp.name}"] = {
     ...${cp.name},
+    props: {
+      ...(${cp.name}.props || {}),
+      params: {
+        type: Object,
+        default: () => ({})
+      },
+    },
     // props: {
     //   ...(${cp.name}.props || {}),
     //   params: {

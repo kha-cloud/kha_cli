@@ -30,13 +30,13 @@ const getAdminUIMenus = (ctx) => {
     // menuTo = menuTo.startsWith('@PV/') ? menuTo.slice(4) : menuTo;
     if(menuTo.startsWith('@PV/')){
       menuTo = menuTo.slice(4);
-      return `/p/${ctx.pluginKey}${menuTo}`;
+      return `/p/${ctx.pluginKey}/${menuTo}`;
     }
     if(menuTo.startsWith('@PVP/')){
       menuTo = menuTo.slice(5);
-      return `/public/${ctx.pluginKey}${menuTo}`;
+      return `/public/${ctx.pluginKey}/${menuTo}`;
     }
-    return `/p/${ctx.pluginKey}${menuTo}`;
+    return `/p/${ctx.pluginKey}/${menuTo}`;
   };
 
   menus.mainMenu = menus.mainMenu.map(_menu => {

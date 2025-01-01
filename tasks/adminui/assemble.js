@@ -26,7 +26,7 @@ const getAdminUIMenus = (ctx) => {
     if(link.startsWith('@/')){ // Link to a page in the administration
       return link.slice(1); // Remove the @
     }
-    var menuTo = link.startsWith('/') ? link : `/${link}`;
+    var menuTo = (link.startsWith('/') || link.startsWith('@')) ? link : `/${link}`;
     // menuTo = menuTo.startsWith('@PV/') ? menuTo.slice(4) : menuTo;
     if(menuTo.startsWith('@PV/')){
       menuTo = menuTo.slice(4);

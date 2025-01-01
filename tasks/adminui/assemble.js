@@ -27,7 +27,6 @@ const getAdminUIMenus = (ctx) => {
       return link.slice(1); // Remove the @
     }
     var menuTo = (link.startsWith('/') || link.startsWith('@')) ? link : `/${link}`;
-    // menuTo = menuTo.startsWith('@PV/') ? menuTo.slice(4) : menuTo;
     if(menuTo.startsWith('@PV/')){
       menuTo = menuTo.slice(4);
       return `/p/${ctx.pluginKey}/${menuTo}`;

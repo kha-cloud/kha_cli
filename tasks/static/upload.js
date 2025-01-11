@@ -30,6 +30,7 @@ async function verifyFileChecksumWithServer(file_path, ctx) {
 
 async function folderFetcher(folderName, ctx) {
   var list = fs.readdirSync(folderName);
+  const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
   // ctx.helpers.log(`Uploading files from [${folderName}]...`, "info");
   // ctx.helpers.log(`Total files: ${list.length}`, "info");
   var uploadedFiles = 0;
@@ -56,6 +57,7 @@ async function folderFetcher(folderName, ctx) {
         // ctx.helpers.log(`File [${fileLocation}] changed on server`, "info");
         ctx.helpers.log(`Uploading file [${fileLocation.replace(path.join(ctx.pluginDir, 'static'), "")}]... (1/${list.length})`, "info");
         isUploadedSuccessfully = await uploadFile(fileLocation, ctx);
+        await sleep(1000);
         if(isUploadedSuccessfully){
           ctx.helpers.log(`File [${fileLocation.replace(path.join(ctx.pluginDir, 'static'), "")}] uploaded successfully`, "info");
           uploadedFiles++;

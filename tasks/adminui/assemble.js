@@ -29,13 +29,13 @@ const getAdminUIMenus = (ctx) => {
     var menuTo = (link.startsWith('/') || link.startsWith('@')) ? link : `/${link}`;
     if(menuTo.startsWith('@PV/')){
       menuTo = menuTo.slice(4);
-      return `/p/${ctx.pluginKey}/${menuTo}`;
+      return `/p/${ctx.pluginKey}${menuTo.startsWith('/') ? menuTo : `/${menuTo}`}`;
     }
     if(menuTo.startsWith('@PVP/')){
       menuTo = menuTo.slice(5);
-      return `/public/${ctx.pluginKey}/${menuTo}`;
+      return `/public/${ctx.pluginKey}${menuTo.startsWith('/') ? menuTo : `/${menuTo}`}`;
     }
-    return `/p/${ctx.pluginKey}/${menuTo}`;
+    return `/p/${ctx.pluginKey}${menuTo.startsWith('/') ? menuTo : `/${menuTo}`}`;
   };
 
   menus.mainMenu = menus.mainMenu.map(_menu => {

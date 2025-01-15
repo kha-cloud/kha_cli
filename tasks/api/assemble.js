@@ -2,7 +2,21 @@ const fs = require('fs');
 const path = require('path');
 const babel = require('@babel/core');
 
-function wrapFunctionInAsyncFunction(fn) {
+function wrapFunctionInAsyncFunction(_fn) {
+  var fn = '';
+  if(typeof _fn === 'string') {
+    fn = _fn
+  } else if(typeof _fn === 'function') {
+    fn = _fn.toString();
+    fn = fn.substring(
+      fn.indexOf('=>') + 1,
+      fn.lastIndexOf('}')
+    );
+    fn = fn.substring(
+      fn.indexOf('{') + 1,
+      fn.length
+    );
+  }
   return `async function asyncFN () { ${fn} }; asyncFN();`;
 }
 
@@ -141,7 +155,7 @@ function getControllers(ctx, isLastError) {
 
         const controllerContent = eval(controllerFileContent);
         for(var key in controllerContent) {
-          if(typeof controllerContent[key] === 'string') {
+          if((typeof controllerContent[key] === 'string') || (typeof controllerContent[key] === 'function')) {
             controllerContent[key] = babel.transformSync(wrapFunctionInAsyncFunction(controllerContent[key]), {
               presets: ['@babel/preset-env'], // to install @babel/preset-env run `npm install --save-dev @babel/preset-env`
             }).code;
@@ -149,6 +163,11 @@ function getControllers(ctx, isLastError) {
         }
         ctx.cache.set(`controllerFile-${controllerFile}`, controllerContent);
         controllers[className] = controllerContent;
+
+        // DELETEME
+        // if(className.includes("HtmlQRCodesController") || className.includes("LinkController")) {
+        //   console.log("controllers[className] = ", controllers[className]);
+        // }
         // controllers[className] = eval(fs.readFileSync(controllerFile, "utf8"));
       }
     });

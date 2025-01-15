@@ -2,7 +2,21 @@ const fs = require('fs');
 const path = require('path');
 const babel = require('@babel/core');
 
-function wrapFunctionInAsyncFunction(fn) {
+function wrapFunctionInAsyncFunction(_fn) {
+  var fn = '';
+  if(typeof _fn === 'string') {
+    fn = _fn
+  } else if(typeof _fn === 'function') {
+    fn = _fn.toString();
+    fn = fn.substring(
+      fn.indexOf('=>') + 1,
+      fn.lastIndexOf('}')
+    );
+    fn = fn.substring(
+      fn.indexOf('{') + 1,
+      fn.length
+    );
+  }
   return `async function asyncFN () { ${fn} }; asyncFN();`;
 }
 

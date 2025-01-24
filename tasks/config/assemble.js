@@ -91,9 +91,20 @@ const getSettingsSchema = (ctx) => {
   const settingsSchemaFile = path.join(ctx.pluginDir, 'config', 'settings', 'schema.jsonc');
   const settingsSchemaContent = fs.readFileSync(settingsSchemaFile, 'utf8');
   const settingsSchema = commentJson.parse(settingsSchemaContent).map((setting) => {
+    var group;
+    if (setting.group && setting.group.startsWith('#')) {
+      group = setting.group.slice(1);
+    } else if (setting.group && 
+      "private theme_template header_template footer_template".includes(setting.group)
+    ) {
+      group = setting.group;
+    } else {
+      group = ctx.pluginKey + '.' + setting.group;
+    }
     return {
       ...setting,
       key: ctx.pluginKey + '.' + setting.key,
+      group,
     };
   });
 

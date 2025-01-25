@@ -95,7 +95,7 @@ const getSettingsSchema = (ctx) => {
     if (setting.group && setting.group.startsWith('#')) {
       group = setting.group.slice(1);
     } else if (setting.group && 
-      "private theme_template header_template footer_template".includes(setting.group)
+      "private theme_template header_template footer_template about_us_template contact_template".includes(setting.group)
     ) {
       group = setting.group;
     } else {

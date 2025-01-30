@@ -3,6 +3,20 @@ const axios = require('axios');
 const path = require('path');
 const commentJson = require('comment-json');
 
+function replaceInCode(code, ctx) {
+  if (!code) return code;
+  var newCode = code.replace(/@PS\//g, `/api/plugins_static/${ctx.pluginKey}/`);
+  // Plugins Key
+  newCode = newCode.replace(/@PK/g, `${ctx.pluginKey}`);
+  // Plugins API links
+  newCode = newCode.replace(/@PA\//g, `/api/plugin_api/${ctx.pluginKey}/`);
+  // Plugins VueJS links
+  newCode = newCode.replace(/@PV\//g, `/p/${ctx.pluginKey}/`);
+  // Plugins VueJS public links
+  newCode = newCode.replace(/@PVP\//g, `/public/${ctx.pluginKey}/`);
+  return newCode;
+}
+
 module.exports = async (ctx, themeName) => {
   // ctx: (rootDir, command, pluginDir, pluginData, pluginKey, khaConfig, cache, clientCache, thirdPartyCache, helpers)
   // helpers: (sleep, cacheInit, getCache, setCache, createCacheObject, calculateChecksum, slugify, unSlugify, log, stringToHex, pathToLinuxFormat, incrementAlphabetCode)
@@ -86,6 +100,7 @@ module.exports = async (ctx, themeName) => {
           if (firstSend) { console.log("Storing liquid files ..."); firstSend = false; everSent = true;}
           console.log("    Sending " + lif.key);
           var content = fs.readFileSync(path, 'utf8');
+          content = replaceInCode(content, ctx);
           await axios.post(
             baseUrl + "/store_liquid_files/" + lif.type + "/" + lif.key,
             {
@@ -116,6 +131,7 @@ module.exports = async (ctx, themeName) => {
       // if (!(cache.uploaded[path] && cache.uploaded[path] == fileStats.mtime.getTime())) {
         console.log("Sending settings_schema ...");
         var content = fs.readFileSync(path, 'utf8');
+        content = replaceInCode(content, ctx);
         content = commentJson.parse(content);
         await axios.post(
           baseUrl + "/store_settings_schema/",
@@ -142,6 +158,7 @@ module.exports = async (ctx, themeName) => {
       if (!(cache.uploaded[path] && cache.uploaded[path] == fileStats.mtime.getTime())) {
         console.log("Sending settings_data ...");
         var content = fs.readFileSync(path, 'utf8');
+        content = replaceInCode(content, ctx);
         content = commentJson.parse(content);
         await axios.post(
           baseUrl + "/store_settings_data/",
@@ -169,6 +186,7 @@ module.exports = async (ctx, themeName) => {
         console.log("Sending pages ...");
         var content = fs.readFileSync(path, 'utf8');
         content = commentJson.parse(content);
+        content = replaceInCode(content, ctx);
         await axios.post(
           baseUrl + "/store_pages/",
           content,

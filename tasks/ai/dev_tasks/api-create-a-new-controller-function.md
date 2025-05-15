@@ -14,13 +14,12 @@ JSON For a JS file with comments
 ### OUTPUT_OPERATION
 INJECT|module.exports|{{RESULT}},
 ### EXAMPLE
-exampleMethod: /* js */`
-  // Available variables: req, res
+exampleMethod: async ({req, res}) => {
 
   // Code here
 
   return res.json({
     test: "test"
   });
-`,
+},
 ### END_OF_TASK

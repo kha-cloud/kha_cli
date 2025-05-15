@@ -23,9 +23,10 @@ gpt-3.5-turbo-16k|10240
       <template v-slot:titleIcon>
           <!-- Material Design Icon (MDI) That have a similar meaning to the page -->
 					<v-icon
-					color="#8f8f8f" 
-					size="50"
-					style="margin-right: 10px; margin-top: -30px; top: 10px; position: relative">mdi-folder-star-multiple-outline</v-icon>
+						color="#8f8f8f" 
+						size="50"
+						style="margin-right: 10px; margin-top: -30px; top: 10px; position: relative"
+					>mdi-folder-star-multiple-outline</v-icon>
 			</template>
 		</CLoader>
 		<CLoader
@@ -51,10 +52,46 @@ gpt-3.5-turbo-16k|10240
 			@deleteRequest="deleteRequest"
 			searchable
 		>
-      <!-- Your custom CRUD content here -->
+			<template v-slot:headBeforeSpacer>
+				<!-- Here you can elements that will be displayed before the search bar and the add button with a spacer between them -->
+			</template>
+
+			<template v-slot:prependActions="{ item }">
+				<!-- Here you can add action buttons that will be displayed before the default (edit, delete) actions -->
+			</template>
+
+			<!-- <template v-slot:browse.item.PARAM_VELUE="{ item }">
+				Custom content for the browse view (Data table)
+			</template> -->
+
+			<!-- <template v-slot:dialog.item.PARAM_VELUE="{ inputsData }">
+				Custom content for the add/edit dialog views (inputsData is like "item" and could be edited directly)
+			</template> -->
+
+			<!-- Example of a custom field for a relation with multiple items (Some relations could have only one item) -->
+			<!-- <template v-slot:browse.item.subjectsIds="{ item }">
+				<span style="font-size: 12px;">
+					{{ item.subjectsIds.slice(0, 3).map((subjectId) => (subjects[subjectId].name)).join(", ") }}
+					{{ item.subjectsIds.length > 3 ? ", ..." : "" }}
+				</span>
+			</template> -->
 
 			<template v-slot:browse.item.icon="{ item }"> <!-- This is only for image attributes -->
 				<img :src="item.icon ? item.icon.path : '/images/placeholder.png'" class="project-thumbnail" />
+			</template>
+
+
+			<template v-slot:dialog.item.customFieldUI="{ inputsData }">
+				<div class="mt-2 mb-3">
+					<!-- Example button (it could be inputs, forms, ... anything) -->
+					<v-btn
+						color="success"
+						@click="inputsData['customFieldUI'] = 'test'"
+					>
+						<v-icon left>mdi-test-tube</v-icon>
+						Test update
+					</v-btn>
+				</div>
 			</template>
 		</CLoader>
 		
@@ -106,6 +143,129 @@ export default {
 					type: "image",
 					hideBrowse: false,
 				},
+				// This is an example of a custom field in the UI of the CRUD (See above HTML for the rest of the code)
+				// the setted "v-slot:dialog.item.VALUE" (VALUE is customFieldUI in this example) should be used in the above HTML
+				{
+					text: "Custom Field UI",
+					value: "customFieldUI",
+					type: "custom", // should be "custom" to prevent the default UI from rendering
+					hideBrowse: false,
+				},
+
+				// Advanced Example with select type and conditional visibility
+        // {
+        //   text: "Key",
+        //   value: "key",
+				// 	isVisible: (inputsData) => (inputsData.type == "static"),
+        //   type: "select", // all, free-users, offer, grade, custom
+				// 	typeData: {
+				// 		items: [
+				// 			{ text: "All", value: "all" },
+				// 			{ text: "Free Users", value: "free-users" },
+				// 			{ text: "Offer", value: "offer" },
+				// 			{ text: "Grade", value: "grade" },
+				// 			{ text: "Custom", value: "custom" },
+				// 		],
+				// 	},
+				// },
+
+				// Advanced Example with select type for connected models (relations)
+				// NOTE: When making a relation like the following example, you should make custom browse item for it in the above HTML
+				// {
+				// 	text: "Subjects",
+				// 	value: "subjectsIds",
+				// 	type: "select",
+				// 	typeData: {
+				// 		items: this.subjects.map((item) => { // `this.subjects` should be loaded from the API, this is just an example
+				// 			return {
+				// 				text: item.name,
+				// 				value: item.id,
+				// 			};
+				// 		}),
+				// 		label: "Subjects",
+				// 		multiple: true,
+				// 		chips: true,
+				// 	},
+				// },
+				
+				// Advanced very complicated example with "khafield" type (May be used in advanced cases)
+				// {
+				// 	text: "Payments",
+				// 	value: "payments",
+				// 	type: "khafield",
+				// 	schema: {
+        //     type: "list",
+        //     sortable: true,
+        //     askToRemove: true,
+        //     groupeForceExpansion: true,
+        //     itemName: "Payment",
+        //     addButtonCaption: "Add Payment",
+        //     label: "Payments",
+        //     addButtonProps: {
+        //       large: true,
+        //       style: "font-weight: 500;",
+        //       outlined: false,
+        //       class: "normal-btn mx-auto d-block",
+        //       color: "#5d9aff",
+        //       iconName: "mdi-plus",
+        //       dark: true,
+        //     },
+        //     itemSchema: {
+        //       type: "group",
+        //       expansion: true,
+        //       defaultExpansion: false,
+        //       label: "{deadline} [{status}]",
+        //       schema: {
+        //         // deadline status price type receiptId
+        //         deadline: {
+        //           type: "text",
+				// 		      "inputType": "datetime-local",
+        //           outlined: true,
+        //           label: "Deadline",
+        //           placeholder: "Enter deadline",
+        //         },
+        //         status: {
+        //           type: "select",
+        //           outlined: true,
+        //           label: "Status",
+        //           placeholder: "Enter status",
+        //           items: [
+        //             { text: "Pending", value: "pending" },
+        //             { text: "Verifiying", value: "verifiying" },
+        //             { text: "Approved", value: "approved" },
+        //             { text: "Rejected", value: "rejected" },
+        //           ],
+        //         },
+        //         price: {
+        //           type: "text",
+        //           outlined: true,
+        //           label: "Price",
+        //           placeholder: "Enter price",
+        //         },
+        //         type: {
+        //           type: "select",
+        //           outlined: true,
+        //           label: "Type",
+        //           items: [
+        //             { text: "By cash", value: "cash" },
+        //             { text: "By check", value: "check" },
+        //             { text: "By Bank Transfer", value: "bank-transfer" },
+				// 						{ text: "By Postal Transfer", value: "postal-transfer" },
+				// 						{ text: "By Online Payment", value: "online-payment" },
+        //           ],
+        //         },
+        //         receipt: {
+        //           type: "media",
+        //           outlined: true,
+        //           singleFile: true,
+        //           tag: "picture", // picture, video, pdf, download [download is for all file types]
+        //           label: "Receipt",
+        //         },
+        //       }
+        //     }
+        //   },
+				// 	hideBrowse: true,
+				// },
 
 				{ // Required
 					text: this.$t('common.actions'),
@@ -153,15 +313,15 @@ export default {
 
 <style>
   /* Your CSS here */
-.project-crud-page-class .project-thumbnail{
-	width: 100px;
-	height: 70px;
-	border: 1px solid #c1c1c1;
-	border-radius: 4px;
-	object-fit: cover;
-	background-color: white;
-	padding: 1px;
-	margin-top: 5px;
-}
+	.project-crud-page-class .project-thumbnail{
+		width: 100px;
+		height: 70px;
+		border: 1px solid #c1c1c1;
+		border-radius: 4px;
+		object-fit: cover;
+		background-color: white;
+		padding: 1px;
+		margin-top: 5px;
+	}
 </style>
 ### END_OF_TASK

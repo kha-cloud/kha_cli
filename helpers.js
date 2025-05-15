@@ -38,13 +38,14 @@ async function noAuthDataCaller(method, url, data, headers = {}, _config = {}) {
 
 async function chatGPT(prompt, options = {}) {
   const response = await openai.createChatCompletion({
-    model: options.model || 'gpt-3.5-turbo',
+    // model: options.model || 'gpt-3.5-turbo',
+    model: 'gpt-4o',
     messages: [
       // { role: "system", content: ""},
       { role: 'user', content: prompt }
     ],
-    max_tokens: options.max_tokens || 500,
-    temperature: options.temperature || 1,
+    // max_tokens: options.max_tokens || 500,
+    // temperature: options.temperature || 1,
   });
 
   return response['data']['choices'][0]['message']['content'];

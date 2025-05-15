@@ -13,6 +13,13 @@ The tool can be used with non KhaCloud projects for remote AI assisted developme
 - node-pre-gyp ( Install using `sudo npm install -g node-pre-gyp`)
 - A KhaCloud based cloud service account (For plugins only)
 
+*Note: `node-pre-gyp` May require build tools*
+```
+sudo apt-get update
+sudo apt-get install python3 make g++ python3-pip
+sudo npm install -g node-pre-gyp
+```
+
 ## Installation
 
 ```bash

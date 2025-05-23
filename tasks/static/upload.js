@@ -34,6 +34,10 @@ async function folderFetcher(folderName, ctx) {
   // ctx.helpers.log(`Uploading files from [${folderName}]...`, "info");
   // ctx.helpers.log(`Total files: ${list.length}`, "info");
   var uploadedFiles = 0;
+  var fileCounter = 0;
+  const allFiles = [];
+  
+  // First, collect all files and process directories
   for (const file of list) {
     const fileLocation = path.join(folderName, file);
     if (fs.lstatSync(fileLocation).isDirectory()) { // ---------------- Directory --------------------
@@ -41,6 +45,16 @@ async function folderFetcher(folderName, ctx) {
       uploadedFiles += folderUploadedFiles;
     } else { // ------------------------------------------------------- File -------------------------
       // ctx.helpers.log(`Uploading file [${file}]... (1/${list.length})`, "info");
+      allFiles.push(fileLocation);
+    }
+  }
+  
+  // Process files in batches of 3
+  for (let i = 0; i < allFiles.length; i += 3) {
+    const batch = allFiles.slice(i, i + 3);
+    const batchPromises = batch.map(async (fileLocation) => {
+      fileCounter++;
+      // ctx.helpers.log(`Uploading file [${path.basename(fileLocation)}]... (${fileCounter}/${allFiles.length})`, "info");
       const fileUpdatedTime = fs.statSync(fileLocation).mtime.getTime();
       // Local verification
       // ctx.helpers.log(`Local verification`, "info");
@@ -55,14 +69,16 @@ async function folderFetcher(folderName, ctx) {
       var isUploadedSuccessfully = false;
       if(isChecksumChanged == true){
         // ctx.helpers.log(`File [${fileLocation}] changed on server`, "info");
-        ctx.helpers.log(`Uploading file [${fileLocation.replace(path.join(ctx.pluginDir, 'static'), "")}]... (1/${list.length})`, "info");
+        ctx.helpers.log(`Uploading file [${fileLocation.replace(path.join(ctx.pluginDir, 'static'), "")}]... (${fileCounter}/${allFiles.length})`, "info");
         isUploadedSuccessfully = await uploadFile(fileLocation, ctx);
-        await sleep(1000);
+        // await sleep(1000);
         if(isUploadedSuccessfully){
           ctx.helpers.log(`File [${fileLocation.replace(path.join(ctx.pluginDir, 'static'), "")}] uploaded successfully`, "info");
-          uploadedFiles++;
+          // uploadedFiles++;
+          return 1; // Will be counted in uploadedFiles
         }else{
           ctx.helpers.log(`File [${fileLocation}] failed to upload`, "error");
+          return 0;
         }
       }
       const sameOnServer_and_changedHere = (isChanged == true) && (isChecksumChanged == false);
@@ -73,8 +89,14 @@ async function folderFetcher(folderName, ctx) {
       if(sameOnServer_and_changedHere) {
         ctx.helpers.log(`File [${fileLocation.replace(path.join(ctx.pluginDir, 'static'), "")}] is already uploaded (Cache updated)`, "info");
       }
-    }
+      return 0;
+    });
+    
+    const results = await Promise.all(batchPromises);
+    uploadedFiles += results.reduce((sum, val) => sum + val, 0);
+    // await sleep(1000); // Wait a bit between batches
   }
+  
   return uploadedFiles;
 }
 

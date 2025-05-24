@@ -5,6 +5,20 @@ const { compilePagesVue } = require('./build_pages_vue');
 const { compilePublicPagesVue } = require('./build_public_pages_vue');
 const { compilePartialsVue } = require('./build_partials_vue');
 
+function replaceInCode(code, ctx) {
+  var newCode = code.replace(/@PS\//g, `/api/plugins_static/${ctx.pluginKey}/`);
+  // Plugins Key
+  newCode = newCode.replace(/@PK/g, `${ctx.pluginKey}`);
+  // Plugins API links
+  newCode = newCode.replace(/@PA\//g, `/api/plugin_api/${ctx.pluginKey}/`);
+  // Plugins VueJS links
+  newCode = newCode.replace(/@PV\//g, `/p/${ctx.pluginKey}/`);
+  // Plugins VueJS public links
+  newCode = newCode.replace(/@PVP\//g, `/public/${ctx.pluginKey}/`);
+  return newCode;
+};
+
+
 const getAdminUIConfig = (ctx) => {
   const configFile = path.join(ctx.pluginDir, 'adminUI', 'config.jsonc');
   const configContent = fs.readFileSync(configFile, 'utf8');
@@ -66,7 +80,7 @@ const getAdminUIMenus = (ctx) => {
 const getAdminUIStore = (ctx) => {
   const storeFile = path.join(ctx.pluginDir, 'adminUI', 'store.js');
   const storeContent = fs.readFileSync(storeFile, 'utf8');
-  return storeContent;
+  return replaceInCode(storeContent, ctx);
 };
 
 const getAdminUIComponents = (ctx, pages, partials) => {

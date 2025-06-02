@@ -5,6 +5,7 @@ const commentJson = require('comment-json');
 
 function replaceInCode(code, ctx) {
   if (!code) return code;
+
   var newCode = code.replace(/@PS\//g, `/api/plugins_static/${ctx.pluginKey}/`);
   // Plugins Key
   newCode = newCode.replace(/@PK/g, `${ctx.pluginKey}`);
@@ -185,8 +186,8 @@ module.exports = async (ctx, themeName) => {
       if (!(cache.uploaded[path] && cache.uploaded[path] == fileStats.mtime.getTime())) {
         console.log("Sending pages ...");
         var content = fs.readFileSync(path, 'utf8');
-        content = commentJson.parse(content);
         content = replaceInCode(content, ctx);
+        content = commentJson.parse(content);
         await axios.post(
           baseUrl + "/store_pages/",
           content,

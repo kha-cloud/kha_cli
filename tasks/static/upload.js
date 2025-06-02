@@ -50,8 +50,9 @@ async function folderFetcher(folderName, ctx) {
   }
   
   // Process files in batches of 3
-  for (let i = 0; i < allFiles.length; i += 3) {
-    const batch = allFiles.slice(i, i + 3);
+  const fileBatchSize = 10;
+  for (let i = 0; i < allFiles.length; i += fileBatchSize) {
+    const batch = allFiles.slice(i, i + fileBatchSize);
     const batchPromises = batch.map(async (fileLocation) => {
       fileCounter++;
       // ctx.helpers.log(`Uploading file [${path.basename(fileLocation)}]... (${fileCounter}/${allFiles.length})`, "info");

@@ -132,7 +132,7 @@ const uploadLiquidFiles = async (ctx, liquidFiles) => {
   for (const lif of liquidFiles) {
     var path = lif.path;
     const stats = fs.statSync(path);
-    const cacheKey = "web_liquid_file_"+path+"_updated";
+    const cacheKey = "web_liquid_file_"+(path).replace(ctx.pluginDir, "")+"_updated";
     if (ctx.cache.get(cacheKey) == stats.mtime.getTime()) {
       continue;
     } else {

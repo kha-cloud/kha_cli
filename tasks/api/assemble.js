@@ -140,13 +140,13 @@ function getControllers(ctx, isLastError) {
         // instead, use `eval` to execute the file and return the exported object
         const className = file.split('.').slice(0, -1).join('.');
         // Check if the file is updated (compare the last modified time from cache)
-        const lastModified = ctx.cache.get(`controllerFileLastModified-${controllerFile}`);
+        const lastModified = ctx.cache.get(`controllerFileLastModified-${controllerFile.replace(ctx.pluginDir, "")}`);
         const currentModified = fs.statSync(controllerFile).mtime.getTime();
         if ((lastModified && lastModified === currentModified) && !isLastError) {
-          controllers[className] = ctx.cache.get(`controllerFile-${controllerFile}`);
+          controllers[className] = ctx.cache.get(`controllerFile-${controllerFile.replace(ctx.pluginDir, "")}`);
           return;
         } else {
-          ctx.cache.set(`controllerFileLastModified-${controllerFile}`, currentModified);
+          ctx.cache.set(`controllerFileLastModified-${controllerFile.replace(ctx.pluginDir, "")}`, currentModified);
         }
 
 
@@ -161,7 +161,7 @@ function getControllers(ctx, isLastError) {
             }).code;
           }
         }
-        ctx.cache.set(`controllerFile-${controllerFile}`, controllerContent);
+        ctx.cache.set(`controllerFile-${controllerFile.replace(ctx.pluginDir, "")}`, controllerContent);
         controllers[className] = controllerContent;
 
         // DELETEME

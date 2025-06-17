@@ -78,6 +78,13 @@ module.exports = async (ctx) => {
       ctx.helpers.log("Creating plugin in the server...");
       const response = await ctx.helpers.dataCaller("post", "/api/plugins", {
         ...ctx.pluginData,
+        config: {
+          dbSchema: [],
+          dbSeed: [],
+          hooks: [],
+          settingsData: [],
+          settingsSchema: [],
+        },
       });
       if (response.error) {
         ctx.helpers.log("Error creating plugin in the server", "error");

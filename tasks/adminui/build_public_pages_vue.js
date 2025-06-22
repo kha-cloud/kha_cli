@@ -5,6 +5,19 @@ const fs = require("fs-extra");
 const path = require("path");
 const rootDir = process.cwd();
 
+function originalReplaceInCode(code, ctx) {
+  var newCode = code.replace(/@PS\//g, `/api/plugins_static/${ctx.pluginKey}/`);
+  // Plugins Key
+  newCode = newCode.replace(/@PK/g, `${ctx.pluginKey}`);
+  // Plugins API links
+  newCode = newCode.replace(/@PA\//g, `/api/plugin_api/${ctx.pluginKey}/`);
+  // Plugins VueJS links
+  newCode = newCode.replace(/@PV\//g, `/p/${ctx.pluginKey}/`);
+  // Plugins VueJS public links
+  newCode = newCode.replace(/@PVP\//g, `/public/${ctx.pluginKey}/`);
+  return newCode;
+};
+
 function deleteEntryJsFile(ctx) {
   const entryJsFile = path.join(ctx.pluginDir, ".cache", "build", "public_pages_entry.js");
   if (fs.existsSync(entryJsFile)) {
@@ -282,9 +295,9 @@ function readCompiledFiles(ctx) {
 
   return {
     //TODO: Change here to enable Map Data for debugging
-    script: jsContent,
+    script: originalReplaceInCode(jsContent, ctx),
     // script: jsContent + "\n" + mapDataUrl,
-    style: cssContent,
+    style: originalReplaceInCode(cssContent, ctx),
     // map: mapContent,
   };
 }

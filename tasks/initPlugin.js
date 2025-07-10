@@ -95,6 +95,7 @@ module.exports = async (ctx, isFixInit = false, initCustomCommand) => {
     url: appUrl.appUrl,
     token: appToken.appToken,
     openai_key: openAiToken.openAiToken,
+    cyberocean_marketplace_plugin_id: null,
   };
   if(!isCustomInit){
     fs.writeFileSync(path.join(ctx.pluginDir, 'kha-plugin-config.jsonc'), JSON.stringify(khaPluginConfigJsonc, null, 2));

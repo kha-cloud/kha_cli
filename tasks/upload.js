@@ -114,7 +114,8 @@ module.exports = async (ctx) => {
     ctx.helpers.log("Try `kha upload` again, The local cache was updated to install the plugin next time", "info");
     process.exit(1);
   }
-  ctx.helpers.log(`Plugin "${ctx.pluginKey}" uploaded successfully`, "success");
+  const finishUploadTime = new Date().toLocaleString();
+  ctx.helpers.log(`Plugin "${ctx.pluginKey}" finished upload task successfully at ${finishUploadTime}`, "success");
   // console.log(data);
 
 };

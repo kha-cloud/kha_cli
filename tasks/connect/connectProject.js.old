@@ -1,3 +1,7 @@
+
+// "peerjs-on-node": "^1.0.2",
+// "simple-peerjs": "^1.0.1",
+
 const path = require('path');
 const fs = require('fs');
 const rootDir = process.cwd();

@@ -202,7 +202,7 @@ module.exports = async (ctx) => {
   process.chdir(originalDirectory);
 
   ctx.cache.set('web-assembling-error', false); // If reach end of the function, it means there is no error
-  ctx.helpers.log(`Finished assembling/uploading Web files (${uploadedFilesSentCounter} files)`, "success");
+  ctx.helpers.log(`Finished assembling/uploading Web files (${uploadedFilesSentCounter || 0} files)`, "success");
   
   // console.log('Routes:', routes);
   // console.log('Templates:', templates);

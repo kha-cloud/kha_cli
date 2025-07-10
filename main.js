@@ -16,8 +16,9 @@ const uploadTheme = require('./tasks/themes/upload');
 const uploadStaticTheme = require('./tasks/themes/upload_static');
 
 const queryAi = require('./tasks/queryAi');
-const connectProject = require('./tasks/connect/connectProject');
-const connectCreateConfig = require('./tasks/connect/connectCreateConfig');
+const marketplaceUpload = require('./tasks/cyberocean/marketplace_upload');
+// const connectProject = require('./tasks/connect/connectProject');
+// const connectCreateConfig = require('./tasks/connect/connectCreateConfig');
 const helpers = require('./helpers');
 
 
@@ -65,7 +66,7 @@ if ((command === 'init') && commandArgs[0]) {
 
 // LOADING
 var isInit = false;
-var isConnect = false;
+// var isConnect = false;
 if(!fs.existsSync(path.join(pluginDir, 'plugin.jsonc'))) {
   if ((command === 'init') && (commandArgs.length === 0)) {
     isInit = true;
@@ -75,38 +76,40 @@ if(!fs.existsSync(path.join(pluginDir, 'plugin.jsonc'))) {
     }).then(() => {
       process.exit(1);
     });
-  } else if (command != 'connect') {
+  } else {
+  // } else if (command != 'connect') {
     console.error('Please run this command from the root of your project');
     console.error('    File not found: ', path.join(pluginDir, 'plugin.jsonc'));
     process.exit(1);
   }
 }
-if (command === 'connect') {
-  isConnect = true;
-  switch (commandArgs[0]) {
-    case "config":
-      connectCreateConfig({
-        pluginDir,
-        helpers,
-      });
-      break;
-  
-    default:
-      connectProject({
-        pluginDir,
-        helpers,
-      });
-      break;
-  }
-}
 
-if(!fs.existsSync(path.join(pluginDir, 'kha-plugin-config.jsonc')) && !isInit && !isConnect) {
+// if (command === 'connect') {
+//   isConnect = true;
+//   switch (commandArgs[0]) {
+//     case "config":
+//       connectCreateConfig({
+//         pluginDir,
+//         helpers,
+//       });
+//       break;
+  
+//     default:
+//       connectProject({
+//         pluginDir,
+//         helpers,
+//       });
+//       break;
+//   }
+// }
+
+if(!fs.existsSync(path.join(pluginDir, 'kha-plugin-config.jsonc')) && !isInit /* && !isConnect */) {
   console.error('Please run this command from the root of your project');
   console.error('    File not found: ', path.join(pluginDir, 'kha-plugin-config.jsonc'));
   process.exit(1);
 }
 
-if(!isInit && !isConnect) run();
+if(!isInit /* && !isConnect */) run();
 
 // MAIN
 function main() {
@@ -117,8 +120,8 @@ function main() {
   console.log('    init <- (This command is only available when plugin is not initialized yet)');
   console.log('    init fix');
   console.log('    ai');
-  console.log('    connect <- (This command is available for all types of projects)');
-  console.log('    connect config <- (This command is available for all types of projects)');
+  // console.log('    connect <- (This command is available for all types of projects)');
+  // console.log('    connect config <- (This command is available for all types of projects)');
   console.log('    theme');
   console.log('    routes');
   console.log('    theme init <THEME_NAME>');
@@ -201,7 +204,20 @@ async function run() {
       console.log();
     }
 
-  }else {
+  } else if (command === 'marketplace') {
+    switch (commandArgs[0]) {
+      case "upload":
+        marketplaceUpload(context);
+        break;
+    
+      default:
+        console.log('Invalid marketplace command');
+        console.log('Available commands:');
+        console.log('    upload');
+        process.exit(1);
+        break;
+    }
+  } else {
     main();
   }
 

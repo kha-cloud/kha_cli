@@ -116,7 +116,7 @@ module.exports = async (ctx) => {
   // Get CyberOcean MarketPlace Plugin ID
   var cyberOceanMarketPlacePluginId = ctx.khaConfig.cyberocean_marketplace_plugin_id;
   if(!cyberOceanMarketPlacePluginId){
-    ctx.helpers.log("No CyberOcean MarketPlace Plugin ID found in: kha-plugin-config.jsonc", "error");
+    ctx.helpers.log("No CyberOcean MarketPlace Plugin ID `cyberocean_marketplace_plugin_id` found in: kha-plugin-config.jsonc", "error");
     process.exit(1);
   }
 

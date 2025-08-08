@@ -543,8 +543,10 @@ module.exports = async (ctx) => {
   }
 
   // Generate the public pages routes and dynamic routes
+  const publicStartupScriptFile = path.join(ctx.pluginDir, "adminUI", "scripts", "public_startup.js");
+  const publicPagesStartupScriptIsUpdated = fs.existsSync(publicStartupScriptFile) ? (fs.statSync(publicStartupScriptFile).mtime.getTime() !== ctx.cache.get('adminui_public_pages_startup_script_updated')) : false;
   // Only if there are changes do compile
-  const recompilePublicPages = ctx.cache.get('adminui_public_pages_compiled_error') || (adminUIPublicPages.filter((page) => page.updated).length > 0) || publicPagesComponentsAreUpdated;
+  const recompilePublicPages = ctx.cache.get('adminui_public_pages_compiled_error') || (adminUIPublicPages.filter((page) => page.updated).length > 0) || publicPagesComponentsAreUpdated || publicPagesStartupScriptIsUpdated;
   var compiledPublicPages;
   if (recompilePublicPages) {
     ctx.cache.set('adminui_public_pages_compiled_error', true); // So if the compilation fails, it will automatically gets flagged as an error
@@ -558,6 +560,7 @@ module.exports = async (ctx) => {
     // Save the last updates
     ctx.cache.set('adminui_compiled_public_pages', compiledPublicPages);
     ctx.cache.set('adminui_public_pages_compiled_error', false);
+    ctx.cache.set('adminui_public_pages_startup_script_updated', fs.statSync(publicStartupScriptFile).mtime.getTime());
   } else {
     // Load the last updates
     compiledPublicPages = ctx.cache.get('adminui_compiled_public_pages');

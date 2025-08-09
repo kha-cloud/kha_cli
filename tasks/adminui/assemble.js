@@ -560,7 +560,7 @@ module.exports = async (ctx) => {
     // Save the last updates
     ctx.cache.set('adminui_compiled_public_pages', compiledPublicPages);
     ctx.cache.set('adminui_public_pages_compiled_error', false);
-    ctx.cache.set('adminui_public_pages_startup_script_updated', fs.statSync(publicStartupScriptFile).mtime.getTime());
+    if(fs.existsSync(publicStartupScriptFile)) ctx.cache.set('adminui_public_pages_startup_script_updated', fs.statSync(publicStartupScriptFile).mtime.getTime());
   } else {
     // Load the last updates
     compiledPublicPages = ctx.cache.get('adminui_compiled_public_pages');

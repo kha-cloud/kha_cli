@@ -71,7 +71,7 @@ async function getCyberOceanAccountTokenFromCache(ctx) {
   } else {
     const gitignore = fs.readFileSync(path.join(ctx.pluginDir, '.gitignore'), 'utf8');
     if (!gitignore.includes('.cyberocean_account_token')) {
-      fs.appendFileSync(path.join(ctx.pluginDir, '.gitignore'), '.cyberocean_account_token\n');
+      fs.appendFileSync(path.join(ctx.pluginDir, '.gitignore'), '\n.cyberocean_account_token\n');
     }
   }
 

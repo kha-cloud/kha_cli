@@ -1,6 +1,6 @@
 {
   "name": "kha_cli",
-  "version": "3.6.3",
+  "version": "3.6.4",
   "description": "KhaCloud CLI Tool for KhaCloud Development and Deployment",
   "main": "main.js",
   "scripts": {

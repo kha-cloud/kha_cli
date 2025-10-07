@@ -177,6 +177,44 @@ function getControllers(ctx, isLastError) {
   }
 };
 
+function getMiddlewares(ctx, isLastError) {
+  // Middlewares are defined in `api/middlewares/*`
+  const middlewaresDir = path.join(ctx.pluginDir, 'api', 'middlewares');
+  var middlewares = {};
+  if (fs.existsSync(middlewaresDir)) {
+    fs.readdirSync(middlewaresDir).forEach(middlewareFileName => {
+      const middlewareFile = path.join(ctx.pluginDir, 'api', 'middlewares', middlewareFileName);
+      // Check if the file is updated (compare the last modified time from cache)
+      if (fs.existsSync(middlewareFile)) {
+        const lastModified = ctx.cache.get('middlewaresFileLastModified-' + middlewareFileName);
+        const currentModified = fs.statSync(middlewareFile).mtime.getTime();
+        if ((lastModified && lastModified === currentModified) && !isLastError) {
+          return ctx.cache.get('middlewares-file-' + middlewareFileName);
+        } else {
+          ctx.cache.set('middlewaresFileLastModified-' + middlewareFileName, currentModified);
+        }
+        // return require(hooksFile);
+        // if this function will be called multiple times, it should require the file each time to get the latest version
+        // do not use `require` here, it will cache the file and not get the latest version
+        // instead, use `eval` to execute the file and return the exported array
+      
+        var middlewareFileContent = fs.readFileSync(middlewareFile, "utf8");
+        middlewareFileContent = replaceInCode(middlewareFileContent, ctx);
+        var middleware = eval(middlewareFileContent);
+        if(middleware.function) {
+          middleware.function = babel.transformSync(wrapFunctionInAsyncFunction(middleware.function), {
+            presets: ['@babel/preset-env'],
+          }).code;
+        }
+        ctx.cache.set('middlewares-file-' + middlewareFileName, middleware);
+        middlewares[middlewareFileName] = middleware;
+
+      }
+    });
+  }
+  return middlewares;
+}
+
 module.exports = async (ctx) => {
   // ctx: (rootDir, command, pluginDir, pluginData, pluginKey, khaConfig, cache, clientCache, thirdPartyCache, helpers)
   // helpers: (sleep, cacheInit, getCache, setCache, createCacheObject, calculateChecksum, slugify, unSlugify, log, stringToHex, pathToLinuxFormat, incrementAlphabetCode)
@@ -193,6 +231,7 @@ module.exports = async (ctx) => {
   const controllers = getControllers(ctx, isLastError);
   const io = getIO(ctx, isLastError);
   const hooks = getHooks(ctx, isLastError);
+  const middlewares = getMiddlewares(ctx, isLastError);
 
   process.chdir(originalDirectory);
 
@@ -203,6 +242,6 @@ module.exports = async (ctx) => {
     controllers,
     io,
     hooks,
-    // middleware, // TODO: Add middlewares support
+    middlewares, // TODO: Add middlewares support
   };
 };

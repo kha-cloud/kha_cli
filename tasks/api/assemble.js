@@ -189,7 +189,14 @@ function getMiddlewares(ctx, isLastError) {
         const lastModified = ctx.cache.get('middlewaresFileLastModified-' + middlewareFileName);
         const currentModified = fs.statSync(middlewareFile).mtime.getTime();
         if ((lastModified && lastModified === currentModified) && !isLastError) {
-          return JSON.parse(ctx.cache.get('middlewares-file-' + middlewareFileName));
+          var middleware = {};
+          try {
+            middleware = JSON.parse(ctx.cache.get('middlewares-file-' + middlewareFileName) || '{}');
+          }catch(e) {
+            middleware = {};
+          }
+          middlewares[middlewareFileName] = middleware;
+          return;
         } else {
           ctx.cache.set('middlewaresFileLastModified-' + middlewareFileName, currentModified);
         }

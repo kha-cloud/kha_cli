@@ -189,7 +189,7 @@ function getMiddlewares(ctx, isLastError) {
         const lastModified = ctx.cache.get('middlewaresFileLastModified-' + middlewareFileName);
         const currentModified = fs.statSync(middlewareFile).mtime.getTime();
         if ((lastModified && lastModified === currentModified) && !isLastError) {
-          return ctx.cache.get('middlewares-file-' + middlewareFileName);
+          return JSON.parse(ctx.cache.get('middlewares-file-' + middlewareFileName));
         } else {
           ctx.cache.set('middlewaresFileLastModified-' + middlewareFileName, currentModified);
         }
@@ -206,7 +206,7 @@ function getMiddlewares(ctx, isLastError) {
             presets: ['@babel/preset-env'],
           }).code;
         }
-        ctx.cache.set('middlewares-file-' + middlewareFileName, middleware);
+        ctx.cache.set('middlewares-file-' + middlewareFileName, JSON.stringify(middleware));
         middlewares[middlewareFileName] = middleware;
 
       }

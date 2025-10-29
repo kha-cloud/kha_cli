@@ -268,5 +268,16 @@ module.exports = async (ctx, isFixInit = false, initCustomCommand) => {
     }
   }
 
+  // -------------------------------------------------------------------- locales
+  if(dirDoNotExist_or_isFixInit_or_isCustomInitCommand('locales')){
+    // Folders
+    makeDir(path.join(ctx.pluginDir, 'locales'));
+
+    // Files
+    makeFile(path.join(ctx.pluginDir, 'locales', 'ar.json'), `{\n}`);
+    makeFile(path.join(ctx.pluginDir, 'locales', 'en.json'), `{\n}`);
+    makeFile(path.join(ctx.pluginDir, 'locales', 'fr.json'), `{\n}`);
+  }
+
 
 };

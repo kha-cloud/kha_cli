@@ -485,6 +485,13 @@ const getAdminUIScripts = (ctx) => {
   };
 
   loadScripts(ctx, scriptsFolder);
+
+  // Injecting translation scripts to startup
+  const TRANSLATION_SCRIPT_FN = `function mergeTranslations(t,s){const e={};for(const n in t)Object.prototype.hasOwnProperty.call(t,n)&&(s[n]&&"string"==typeof s[n]?e[n]={...t[n],text:s[n]}:e[n]=t[n]);for(const n in s)Object.prototype.hasOwnProperty.call(s,n)&&(t[n]||(e[n]=s[n]));return e}const locales_settings=$nuxt.$store.state.shop.settings["plugin_${ctx.pluginKey}_custom_locales"].value;for(const t in locales_settings){const s=mergeTranslations($nuxt.$i18n.messages[t],locales_settings[t]);$nuxt.$i18n.setLocaleMessage(t,s)}`;
+  const TRANSLATION_SCRIPT = `if(!window.${ctx.pluginKey}_translation_script_finished){window.${ctx.pluginKey}_translation_script_finished = true;${TRANSLATION_SCRIPT_FN}}`;
+  scripts['startup'] = TRANSLATION_SCRIPT + "\n" + (scripts['startup'] || "");
+  scripts['public_startup'] = TRANSLATION_SCRIPT + "\n" + (scripts['public_startup'] || "");
+  
   return scripts;
 };
 
@@ -565,6 +572,12 @@ module.exports = async (ctx) => {
     // Load the last updates
     compiledPublicPages = ctx.cache.get('adminui_compiled_public_pages');
   }
+  // Adding 'public_startup' script to the public pages
+  const publicStartupScriptCaller = `if(!window.${ctx.pluginKey}_public_startup_script_finished){
+    window.${ctx.pluginKey}_public_startup_script_finished = true;
+    ${adminUIScripts['public_startup']}
+  }`;
+  compiledPublicPages.script = publicStartupScriptCaller + "\n" + compiledPublicPages.script;
 
   // Generate the partials routes and dynamic routes
   // Only if there are changes do compile

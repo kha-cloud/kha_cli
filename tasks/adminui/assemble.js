@@ -554,7 +554,7 @@ module.exports = async (ctx) => {
   const publicPagesStartupScriptIsUpdated = fs.existsSync(publicStartupScriptFile) ? (fs.statSync(publicStartupScriptFile).mtime.getTime() !== ctx.cache.get('adminui_public_pages_startup_script_updated')) : false;
   // Only if there are changes do compile
   const recompilePublicPages = ctx.cache.get('adminui_public_pages_compiled_error') || (adminUIPublicPages.filter((page) => page.updated).length > 0) || publicPagesComponentsAreUpdated || publicPagesStartupScriptIsUpdated;
-  var compiledPublicPages;
+  var compiledPublicPages = {};
   if (recompilePublicPages) {
     ctx.cache.set('adminui_public_pages_compiled_error', true); // So if the compilation fails, it will automatically gets flagged as an error
     ctx.helpers.log('Admin UI public pages compilation started', 'info');
@@ -570,7 +570,7 @@ module.exports = async (ctx) => {
     if(fs.existsSync(publicStartupScriptFile)) ctx.cache.set('adminui_public_pages_startup_script_updated', fs.statSync(publicStartupScriptFile).mtime.getTime());
   } else {
     // Load the last updates
-    compiledPublicPages = ctx.cache.get('adminui_compiled_public_pages');
+    compiledPublicPages = ctx.cache.get('adminui_compiled_public_pages') || {};
   }
   // Adding 'public_startup' script to the public pages
   const publicStartupScriptCaller = `if(!window.${ctx.pluginKey}_public_startup_script_finished){

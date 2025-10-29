@@ -161,3 +161,14 @@ const taskStatus = await myTask.getState(); // pending, finished, failed
 ```
 
 For more information about tasks creation, visit the documentation of **PETH** [plugins_engine_task_handler](https://github.com/kha-cloud/plugins_engine_task_handler) on Github
+
+
+## Trigger Files
+
+### Pre Install Script
+- It runs at the start of `kha upload` script
+- File name should be `kha-pre-install.sh`
+
+### After Install Script
+- It runs at the end of `kha upload` script (After uploading to the server)
+- File name should be `kha-install.sh`

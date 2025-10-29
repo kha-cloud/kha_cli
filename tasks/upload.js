@@ -1,3 +1,4 @@
+const { spawnSync } = require('child_process');
 const adminui_assembler = require('./adminui/assemble');
 const api_assembler = require('./api/assemble');
 const config_assembler = require('./config/assemble');
@@ -11,6 +12,23 @@ const path = require('path');
 
 module.exports = async (ctx) => {
   var data = {};
+
+  // Run `kha-pre-install.sh` if it exists
+  if(fs.existsSync(path.join(ctx.pluginDir, 'kha-pre-install.sh'))) {
+    ctx.helpers.log("Running kha-pre-install.sh...");
+    let bashCode = fs.readFileSync(path.join(ctx.pluginDir, 'kha-pre-install.sh'), 'utf8');
+    // Auto-add shebang if not present
+    if (!bashCode.startsWith('#!')) { bashCode = '#!/bin/bash\n' + bashCode; }
+    const result = spawnSync('bash', ['-s'], { input: bashCode, stdio: 'pipe', encoding: 'utf8' });
+    if (result.status !== 0) {
+      ctx.helpers.log("kha-pre-install.sh failed!", "error");
+      console.error("Exit code:", result.status);
+      console.error("Error output:", result.stderr);
+    } else {
+      ctx.helpers.log("kha-pre-install.sh run successfully", "success");
+      if (result.stdout) { console.log("Output:", result.stdout); }
+    }
+  }
 
   ctx.helpers.log("Assembling plugin data...");
   // ctx.helpers.log("ctx.commandParams");
@@ -114,6 +132,24 @@ module.exports = async (ctx) => {
     ctx.helpers.log("Try `kha upload` again, The local cache was updated to install the plugin next time", "info");
     process.exit(1);
   }
+
+  // Run `kha-install.sh` if it exists
+  if(fs.existsSync(path.join(ctx.pluginDir, 'kha-install.sh'))) {
+    ctx.helpers.log("Running kha-install.sh...");
+    let bashCode = fs.readFileSync(path.join(ctx.pluginDir, 'kha-install.sh'), 'utf8');
+    // Auto-add shebang if not present
+    if (!bashCode.startsWith('#!')) { bashCode = '#!/bin/bash\n' + bashCode; }
+    const result = spawnSync('bash', ['-s'], { input: bashCode, stdio: 'pipe', encoding: 'utf8' });
+    if (result.status !== 0) {
+      ctx.helpers.log("kha-install.sh failed!", "error");
+      console.error("Exit code:", result.status);
+      console.error("Error output:", result.stderr);
+    } else {
+      ctx.helpers.log("kha-install.sh run successfully", "success");
+      if (result.stdout) { console.log("Output:", result.stdout); }
+    }
+  }
+  
   const finishUploadTime = new Date().toLocaleString();
   ctx.helpers.log(`Plugin "${ctx.pluginKey}" finished upload task successfully at ${finishUploadTime}`, "success");
   // console.log(data);

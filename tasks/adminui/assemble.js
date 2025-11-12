@@ -573,8 +573,8 @@ module.exports = async (ctx) => {
     compiledPublicPages = ctx.cache.get('adminui_compiled_public_pages') || {};
   }
   // Adding 'public_startup' script to the public pages
-  const publicStartupScriptCaller = `if(!window.${ctx.pluginKey}_public_startup_script_finished){
-    window.${ctx.pluginKey}_public_startup_script_finished = true;
+  const publicStartupScriptCaller = `if(!window["${ctx.pluginKey}_public_startup_script_finished"]){
+    window["${ctx.pluginKey}_public_startup_script_finished"] = true;
     ${adminUIScripts['public_startup']}
   }`;
   compiledPublicPages.script = publicStartupScriptCaller + "\n" + compiledPublicPages.script;

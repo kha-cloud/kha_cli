@@ -10,7 +10,7 @@ async function uploadPluginZipFile(ctx, file_path, pluginId, cyberOceanUrl, cybe
   data = fs.createReadStream(file_path);
   const form = new FormData();
   form.append('file', data);
-  const uploadUrl = cyberOceanUrl + `/api/plugin_api/x/upload-plugin-zip-file/${pluginId}`;
+  const uploadUrl = cyberOceanUrl + `/api/plugin_api/x/upload-plugin-zip-file/${pluginId+"_v"+ctx.pluginData.pluginVersion}`;
   try {
     const result = await ctx.helpers.noAuthDataCaller(
       "post",

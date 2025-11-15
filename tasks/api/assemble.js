@@ -183,6 +183,7 @@ function getMiddlewares(ctx, isLastError) {
   var middlewares = {};
   if (fs.existsSync(middlewaresDir)) {
     fs.readdirSync(middlewaresDir).forEach(middlewareFileName => {
+      if(!middlewareFileName.endsWith('.js')) return;
       const middlewareFile = path.join(ctx.pluginDir, 'api', 'middlewares', middlewareFileName);
       // Check if the file is updated (compare the last modified time from cache)
       if (fs.existsSync(middlewareFile)) {

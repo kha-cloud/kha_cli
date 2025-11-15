@@ -487,7 +487,7 @@ const getAdminUIScripts = (ctx) => {
   loadScripts(ctx, scriptsFolder);
 
   // Injecting translation scripts to startup
-  const TRANSLATION_SCRIPT = `function mergeTranslations(t,n){const o={};for(const s in t)Object.prototype.hasOwnProperty.call(t,s)&&(n[s]&&"string"==typeof n[s]?o[s]={...t[s],text:n[s]}:o[s]=t[s]);for(const s in n)Object.prototype.hasOwnProperty.call(n,s)&&(t[s]||(o[s]=n[s]));return o}if(!window["plugin_${ctx.pluginKey}_custom_locales"]){window["plugin_${ctx.pluginKey}_custom_locales"]=!0;const t=$nuxt.$store.state.shop.settings["plugin_${ctx.pluginKey}_custom_locales"]?.value||[];for(const n in t){const o=mergeTranslations($nuxt.$i18n.messages[n],t[n]);$nuxt.$i18n.setLocaleMessage(n,o)}}`;
+  const TRANSLATION_SCRIPT = `function mergeTranslations(t,n){const o={};for(const e in t)Object.prototype.hasOwnProperty.call(t,e)&&(n[e]&&"string"==typeof n[e]?o[e]=n[e]:n[e]&&"object"==typeof n[e]?o[e]={...t[e],...n[e]}:o[e]=t[e]);for(const e in n)Object.prototype.hasOwnProperty.call(n,e)&&(t[e]||(o[e]=n[e]));return o}if(!window["plugin_${ctx.pluginKey}_custom_locales"]){window["plugin_${ctx.pluginKey}_custom_locales"]=!0;const t=$nuxt.$store.state.shop.settings["plugin_${ctx.pluginKey}_custom_locales"]?.value||[];for(const n in t){const o=mergeTranslations($nuxt.$i18n.messages[n],t[n]);$nuxt.$i18n.setLocaleMessage(n,o)}}`;
   // const TRANSLATION_SCRIPT = `if(!window._xx_${ctx.pluginKey}_translation_script_finished){window._xx_${ctx.pluginKey}_translation_script_finished = true; \n${TRANSLATION_SCRIPT_FN}\n}`;
   scripts['startup'] = TRANSLATION_SCRIPT + "\n" + (scripts['startup'] || "");
   scripts['public_startup'] = TRANSLATION_SCRIPT + "\n" + (scripts['public_startup'] || "");
